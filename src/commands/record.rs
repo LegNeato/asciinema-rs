@@ -129,14 +129,14 @@ fn make_writer(options: Options) -> Result<LineWriter<Box<Write>>, Error> {
 }
 
 pub fn go(options: Options) -> ::std::result::Result<RecordLocation, Error> {
-    let winsize = winsize::from_fd(libc::STDIN_FILENO).context("Cannot get window size")?;
+    let (cols, rows) = termion::terminal_size().context("Cannot get terminal size")?;
 
     let mut writer: LineWriter<Box<Write>> = make_writer(options.clone())?;
 
     let header = asciicast::Header {
         version: 2,
-        width: u32::from(winsize.ws_col),
-        height: u32::from(winsize.ws_row),
+        width: u32::from(cols),
+        height: u32::from(rows),
         timestamp: Some(Utc::now()),
         duration: None,
         idle_time_limit: options.idle_time_limit,
@@ -154,20 +154,18 @@ pub fn go(options: Options) -> ::std::result::Result<RecordLocation, Error> {
             .unwrap_or_else(|| env::var("SHELL").unwrap_or_else(|_| "sh".to_string())),
     )?;
 
+    // Write out the recording banner.
     let mut stdout = StandardStream::stdout(ColorChoice::Always);
     writeln!(&mut stdout, "{}", "".to_string())?;
     stdout.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
     let rec = format!(
         "{:\u{2B07}^1$}",
-        "  \u{1F534}  [RECORDING]  ", winsize.ws_col as usize
+        "  \u{1F534}  [RECORDING]  ", cols as usize
     );
     writeln!(&mut stdout, "{}", rec)?;
     writeln!(&mut stdout, "{}", "".to_string())?;
     stdout.reset()?;
     stdout.flush()?;
-
-    print!("{}", termion::clear::UntilNewline);
-
 
     let shell = Shell {
         writer,
@@ -175,10 +173,6 @@ pub fn go(options: Options) -> ::std::result::Result<RecordLocation, Error> {
     };
     child.proxy(shell)?;
     child.wait()?;
-
-    println!("HERE");
-
-    //print!("{}", termion::clear::BeforeCursor);
 
     // Return where recorded asciicast can be found.
     Ok(match options.file {
