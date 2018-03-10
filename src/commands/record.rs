@@ -156,8 +156,7 @@ pub fn go(options: Options) -> ::std::result::Result<RecordLocation, Error> {
         "{:\u{2B07}^1$}",
         "  \u{1F534}  [RECORDING]  ", cols as usize
     );
-    writeln!(&mut stdout, "{}", rec)?;
-    writeln!(&mut stdout, "{}", "".to_string())?;
+    writeln!(&mut stdout, "{}\n", rec)?;
     stdout.reset()?;
     stdout.flush()?;
 
