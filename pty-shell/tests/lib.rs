@@ -1,0 +1,3 @@
+mod it_can_spawn;
+mod it_can_hook_stdout_with_handler;
+mod it_can_hook_stdout_with_callback;
