@@ -79,12 +79,18 @@ fn main() {
 
     std::process::exit(match result {
         Ok(location) => {
-            match location {
+            let location_output = match location {
                 record::RecordLocation::Local(f) => {
-                    println!("asciicast saved to: {}", f.to_string_lossy())
+                    format!("asciicast saved to: {}", f.to_string_lossy())
                 }
-                record::RecordLocation::Remote(url) => println!("{}", url),
+                record::RecordLocation::Remote(url) => format!("{}", url),
             };
+            println!("{}", location_output);
+            // If we don't do this, the prompt when we exit is too far right.
+            print!(
+                "{}",
+                termion::cursor::Left(location_output.chars().count() as u16)
+            );
             0
         }
         Err(x) => {
