@@ -150,22 +150,24 @@ pub fn go(options: Options) -> ::std::result::Result<RecordLocation, Error> {
     let child = tty::Fork::from_ptmx()?;
     child.exec(
         options
-            .command
+            .command.clone()
             .unwrap_or_else(|| env::var("SHELL").unwrap_or_else(|_| "sh".to_string())),
     )?;
 
-    // Write out the recording banner.
-    let mut stdout = StandardStream::stdout(ColorChoice::Always);
-    writeln!(&mut stdout, "{}", "".to_string())?;
-    stdout.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
-    let rec = format!(
-        "{:\u{2B07}^1$}",
-        "  \u{1F534}  [RECORDING]  ", cols as usize
-    );
-    writeln!(&mut stdout, "{}", rec)?;
-    writeln!(&mut stdout, "{}", "".to_string())?;
-    stdout.reset()?;
-    stdout.flush()?;
+    if options.command.is_none() {
+        // Write out the recording banner for interactive sessions.
+        let mut stdout = StandardStream::stdout(ColorChoice::Always);
+        writeln!(&mut stdout, "{}", "".to_string())?;
+        stdout.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
+        let rec = format!(
+            "{:\u{2B07}^1$}",
+            "  \u{1F534}  [RECORDING]  ", cols as usize
+        );
+        writeln!(&mut stdout, "{}", rec)?;
+        writeln!(&mut stdout, "{}", "".to_string())?;
+        stdout.reset()?;
+        stdout.flush()?;
+    }
 
     let shell = Shell {
         writer,
