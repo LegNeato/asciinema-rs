@@ -86,8 +86,6 @@ where
 pub struct Options {
     /// Title of the asciicast
     pub title: Option<String>,
-    /// Command to record, defaults to $SHELL
-    pub command: Option<String>,
     /// Limit recorded idle time to given number of seconds
     pub idle_time_limit: Option<f64>,
     /// Answer "yes" to all prompts (e.g. upload confirmation)
@@ -140,7 +138,7 @@ pub fn go(options: Options) -> ::std::result::Result<RecordLocation, Error> {
         timestamp: Some(Utc::now()),
         duration: None,
         idle_time_limit: options.idle_time_limit,
-        command: options.command.clone(),
+        command: None,
         title: options.title,
     };
     let json_header = serde_json::to_string(&header).context("Cannot convert header to JSON")?;
@@ -148,26 +146,20 @@ pub fn go(options: Options) -> ::std::result::Result<RecordLocation, Error> {
     writeln!(writer, "{}", json_header).context("Cannot write header")?;
 
     let child = tty::Fork::from_ptmx()?;
-    child.exec(
-        options
-            .command.clone()
-            .unwrap_or_else(|| env::var("SHELL").unwrap_or_else(|_| "sh".to_string())),
-    )?;
+    child.exec(env::var("SHELL").unwrap_or_else(|_| "sh".to_string()))?;
 
-    if options.command.is_none() {
-        // Write out the recording banner for interactive sessions.
-        let mut stdout = StandardStream::stdout(ColorChoice::Always);
-        writeln!(&mut stdout, "{}", "".to_string())?;
-        stdout.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
-        let rec = format!(
-            "{:\u{2B07}^1$}",
-            "  \u{1F534}  [RECORDING]  ", cols as usize
-        );
-        writeln!(&mut stdout, "{}", rec)?;
-        writeln!(&mut stdout, "{}", "".to_string())?;
-        stdout.reset()?;
-        stdout.flush()?;
-    }
+    // Write out the recording banner for interactive sessions.
+    let mut stdout = StandardStream::stdout(ColorChoice::Always);
+    writeln!(&mut stdout, "{}", "".to_string())?;
+    stdout.set_color(ColorSpec::new().set_fg(Some(Color::Red)))?;
+    let rec = format!(
+        "{:\u{2B07}^1$}",
+        "  \u{1F534}  [RECORDING]  ", cols as usize
+    );
+    writeln!(&mut stdout, "{}", rec)?;
+    writeln!(&mut stdout, "{}", "".to_string())?;
+    stdout.reset()?;
+    stdout.flush()?;
 
     let shell = Shell {
         writer,

@@ -29,9 +29,7 @@ enum Opt {
         /// Title of the asciicast
         #[structopt(short = "t", long = "title")]
         title: Option<String>,
-        /// Command to record, defaults to $SHELL
-        #[structopt(short = "c", long = "command")]
-        command: Option<String>,
+        // TODO: command
         /// Limit recorded idle time to given number of seconds
         #[structopt(name = "IDLE_TIME_LIMIT", short = "i", long = "idle-time-limit")]
         idle_time_limit: Option<f64>,
@@ -58,7 +56,6 @@ fn main() {
         // TODO: Is there a cleaner way to spread here?
         Opt::RecordOptions {
             title,
-            command,
             idle_time_limit,
             force_yes,
             overwrite,
@@ -67,7 +64,6 @@ fn main() {
             file,
         } => record::go(record::Options {
             title,
-            command,
             idle_time_limit,
             force_yes,
             overwrite,
