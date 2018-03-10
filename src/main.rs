@@ -18,6 +18,8 @@ use structopt::StructOpt;
 mod commands;
 use commands::record;
 
+mod config;
+
 #[derive(StructOpt, Debug)]
 #[structopt(name = "asciinema", author = "")]
 /// Record and share your terminal sessions, the right way.
