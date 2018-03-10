@@ -122,7 +122,7 @@ fn make_writer(options: Options) -> Result<LineWriter<Box<Write>>, Error> {
             })?
         }
         None => {
-            let w = io::Cursor::new(vec![0; 10_000]);
+            let w = io::Cursor::new(vec![0; 1_000]);
             Ok(LineWriter::new(Box::new(w)))
         }
     }
