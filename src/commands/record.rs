@@ -145,7 +145,7 @@ pub fn go(options: Options) -> ::std::result::Result<RecordLocation, Error> {
     };
     let json_header = serde_json::to_string(&header).context("Cannot convert header to JSON")?;
 
-    writeln!(writer, "{}", json_header).context("Cannot write header to file")?;
+    writeln!(writer, "{}", json_header).context("Cannot write header")?;
 
     let child = tty::Fork::from_ptmx()?;
     child.exec(

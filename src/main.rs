@@ -5,8 +5,8 @@ extern crate failure;
 extern crate libc;
 extern crate pty_shell;
 extern crate termcolor;
-extern crate url;
 extern crate termion;
+extern crate url;
 
 extern crate serde_json;
 #[macro_use]
