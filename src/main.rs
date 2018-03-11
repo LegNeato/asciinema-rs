@@ -34,9 +34,7 @@ fn main() {
     std::process::exit(match result {
         Ok(location) => {
             let location_output = match location {
-                RecordLocation::Local(f) => {
-                    format!("asciicast saved to: {}", f.to_string_lossy())
-                }
+                RecordLocation::Local(f) => format!("asciicast saved to: {}", f.to_string_lossy()),
                 RecordLocation::Remote(url) => format!("{}", url),
             };
             println!("{}", location_output);
