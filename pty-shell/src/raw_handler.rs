@@ -11,10 +11,10 @@ use winsize;
 pub const INPUT: Token = Token(0);
 pub const OUTPUT: Token = Token(1);
 
-static mut sigwinch_count: i32 = 0;
+static mut SIGWINCH_COUNT: i32 = 0;
 extern "C" fn handle_sigwinch(_: i32) {
     unsafe {
-        sigwinch_count += 1;
+        SIGWINCH_COUNT += 1;
     }
 }
 
@@ -42,7 +42,7 @@ impl RawHandler {
             output: output,
             pty: pty,
             handler: handler,
-            resize_count: Self::sigwinch_count(),
+            resize_count: Self::sigwich_count(),
         }
     }
 
@@ -56,12 +56,12 @@ impl RawHandler {
         }
     }
 
-    pub fn sigwinch_count() -> i32 {
-        unsafe { sigwinch_count }
+    pub fn sigwich_count() -> i32 {
+        unsafe { SIGWINCH_COUNT }
     }
 
     fn should_resize(&self) -> bool {
-        let last = Self::sigwinch_count();
+        let last = Self::sigwich_count();
 
         last > self.resize_count
     }
@@ -111,7 +111,7 @@ impl Handler for RawHandler {
 
                 (&mut *self.handler).resize(&winsize);
 
-                self.resize_count = Self::sigwinch_count();
+                self.resize_count = Self::sigwich_count();
             }
         }
     }
