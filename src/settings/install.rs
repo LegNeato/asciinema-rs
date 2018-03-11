@@ -26,13 +26,12 @@ impl InstallInfo {
         let location = get_install_id_file()?;
 
         if location.exists() {
-            let mut f = File::open(&location).expect("file not found");
+            let mut f = File::open(&location)?;
 
             let mut contents = String::new();
-            f.read_to_string(&mut contents)
-                .expect("something went wrong reading the file");
+            f.read_to_string(&mut contents)?;
 
-            let id = Uuid::parse_str(contents.trim()).unwrap();
+            let id = Uuid::parse_str(contents.trim())?;
 
             Ok(InstallInfo {
                 id,
@@ -51,9 +50,8 @@ impl InstallInfo {
     pub fn save(mut self) -> Result<(), Error> {
         create_dir_all(self.location.parent().unwrap())?;
         // Write the file.
-        let mut f = File::create(&self.location).expect("Unable to create file");
-        f.write_all(self.id.hyphenated().to_string().as_bytes())
-            .expect("Unable to write data");
+        let mut f = File::create(&self.location)?;
+        f.write_all(self.id.hyphenated().to_string().as_bytes())?;
         self.is_saved = true;
         Ok(())
     }
