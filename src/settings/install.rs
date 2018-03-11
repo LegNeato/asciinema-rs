@@ -40,7 +40,11 @@ impl InstallInfo {
                 location,
             })
         } else {
-            Ok(InstallInfo { id: Uuid::new_v4(), is_saved: false, location })
+            Ok(InstallInfo {
+                id: Uuid::new_v4(),
+                is_saved: false,
+                location,
+            })
         }
     }
 
@@ -59,10 +63,13 @@ impl FromStr for InstallInfo {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-
         let id = Uuid::parse_str(s.trim())?;
         let location = get_install_id_file()?;
 
-        Ok(InstallInfo { id, is_saved: false, location })
+        Ok(InstallInfo {
+            id,
+            is_saved: false,
+            location,
+        })
     }
 }

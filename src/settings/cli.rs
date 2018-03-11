@@ -1,4 +1,4 @@
-use super::{AuthenticateSettings, RecordSettings};
+use super::{AuthenticateSettings, RecordSettings, UploadSettings};
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "asciinema", author = "")]
@@ -10,4 +10,7 @@ pub enum CommandLine {
     /// Record terminal session
     #[structopt(name = "rec")]
     Record(RecordSettings),
+    /// Upload locally saved terminal session to asciinema.org
+    #[structopt(name = "upload")]
+    Upload(UploadSettings),
 }

@@ -15,6 +15,7 @@ use self::cli::CommandLine;
 pub enum Action {
     Authenticate,
     Record,
+    Upload,
 }
 
 pub struct Settings {
@@ -22,6 +23,7 @@ pub struct Settings {
     pub api_url: Url,
     pub authenticate: Option<AuthenticateSettings>,
     pub record: Option<RecordSettings>,
+    pub upload: Option<UploadSettings>,
 }
 
 impl Settings {
@@ -43,12 +45,21 @@ impl Settings {
                 api_url,
                 authenticate: Some(AuthenticateSettings { ..x }),
                 record: None,
+                upload: None,
             }),
             CommandLine::Record { 0: x } => Ok(Settings {
                 action: Action::Record,
                 api_url,
                 authenticate: None,
                 record: Some(RecordSettings { ..x }),
+                upload: None,
+            }),
+            CommandLine::Upload { 0: x } => Ok(Settings {
+                action: Action::Upload,
+                api_url,
+                authenticate: None,
+                record: None,
+                upload: Some(UploadSettings { ..x }),
             }),
         }
     }
@@ -94,4 +105,11 @@ pub struct AuthenticateSettings {
     /// An existing UUIDv4 install id to use
     #[structopt(short = "i", long = "install-id")]
     pub install_id: Option<Uuid>,
+}
+
+#[derive(StructOpt, Clone, Debug, Deserialize)]
+pub struct UploadSettings {
+    /// Filename/path of local recording
+    #[structopt(name = "FILE", parse(from_os_str))]
+    pub file: PathBuf,
 }
