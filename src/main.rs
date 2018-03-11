@@ -4,7 +4,9 @@ extern crate config;
 #[macro_use]
 extern crate failure;
 extern crate libc;
+extern crate os_type;
 extern crate pty_shell;
+extern crate reqwest;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
