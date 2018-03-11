@@ -2,21 +2,29 @@ use super::config;
 use std::path::PathBuf;
 use failure::Error;
 use uuid::Uuid;
+use std::str::FromStr;
 use std::fs::File;
 use std::fs::create_dir_all;
 use std::io::Read;
 use std::io::Write;
 
-#[derive(Clone, Debug)]
+fn get_install_id_file() -> Result<PathBuf, Error> {
+    let mut location = config::get_config_dir()?.0;
+    location.push("install-id");
+    Ok(location)
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct InstallInfo {
-    pub id: Option<Uuid>,
+    pub id: Uuid,
+    pub is_saved: bool,
     pub location: PathBuf,
 }
 
 impl InstallInfo {
     pub fn new() -> Result<Self, Error> {
-        let mut location = config::get_config_dir()?.0;
-        location.push("install-id");
+        let location = get_install_id_file()?;
+
         if location.exists() {
             let mut f = File::open(&location).expect("file not found");
 
@@ -24,30 +32,37 @@ impl InstallInfo {
             f.read_to_string(&mut contents)
                 .expect("something went wrong reading the file");
 
-            let parsed_id = Uuid::parse_str(contents.trim()).unwrap();
+            let id = Uuid::parse_str(contents.trim()).unwrap();
 
             Ok(InstallInfo {
-                id: Some(parsed_id),
+                id,
+                is_saved: true,
                 location,
             })
         } else {
-            Ok(InstallInfo { id: None, location })
+            Ok(InstallInfo { id: Uuid::new_v4(), is_saved: false, location })
         }
     }
 
-    pub fn generate(self) -> Self {
-        InstallInfo {
-            id: Some(Uuid::new_v4()),
-            location: self.location,
-        }
-    }
-
-    pub fn save(self) -> Result<(), Error> {
+    pub fn save(mut self) -> Result<(), Error> {
         create_dir_all(self.location.parent().unwrap())?;
         // Write the file.
         let mut f = File::create(&self.location).expect("Unable to create file");
-        f.write_all(self.id.unwrap().hyphenated().to_string().as_bytes())
+        f.write_all(self.id.hyphenated().to_string().as_bytes())
             .expect("Unable to write data");
+        self.is_saved = true;
         Ok(())
+    }
+}
+
+impl FromStr for InstallInfo {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+
+        let id = Uuid::parse_str(s.trim())?;
+        let location = get_install_id_file()?;
+
+        Ok(InstallInfo { id, is_saved: false, location })
     }
 }

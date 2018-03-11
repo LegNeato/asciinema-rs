@@ -3,6 +3,7 @@ use structopt::StructOpt;
 use url::Url;
 use url_serde;
 use failure::Error;
+use uuid::Uuid;
 
 mod cli;
 mod config;
@@ -90,5 +91,7 @@ pub struct ApiSettings {
 
 #[derive(StructOpt, Clone, Debug, Deserialize)]
 pub struct AuthenticateSettings {
-    pub id: Option<String>,
+    /// An existing UUIDv4 install id to use
+    #[structopt(short = "i", long = "install-id")]
+    pub install_id: Option<Uuid>,
 }

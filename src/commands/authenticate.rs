@@ -1,19 +1,33 @@
 use failure::Error;
+use url;
 use url::Url;
 use settings::AuthenticateSettings;
 use settings::install::InstallInfo;
+use uuid::Uuid;
+
+fn get_connect_url(base_url: Url, uuid: Uuid) -> Result<Url, url::ParseError> {
+    base_url.join("/connect/")?.join(&uuid.hyphenated().to_string())
+}
 
 pub fn go(
-    _settings: AuthenticateSettings,
-    install_info: InstallInfo,
+    settings: AuthenticateSettings,
     api_url: Url,
 ) -> Result<Url, Error> {
-    let authed: InstallInfo = match install_info.id {
-        Some(_) => install_info,
-        None => install_info.generate(),
-    };
+    // Load install id from a file or generate a new one.
+    let mut install_info = InstallInfo::new()?;
 
-    authed.clone().save()?;
+    // Use and save any manually passed in install id.
+    if let Some(new_id) = settings.install_id {
+        install_info.id = new_id;
+        install_info.is_saved = false;
+    }
 
-    Ok(api_url.join("/connect/")?.join(&authed.id.unwrap().hyphenated().to_string())?)
+    let id = install_info.id;
+
+    // Persist the install id to a file.
+    if !install_info.is_saved {
+        install_info.save()?;
+    }
+
+    Ok(get_connect_url(api_url, id)?)
 }
