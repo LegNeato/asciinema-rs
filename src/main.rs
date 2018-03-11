@@ -15,11 +15,13 @@ extern crate termcolor;
 extern crate termion;
 extern crate url;
 extern crate url_serde;
+extern crate uuid;
 
 mod commands;
 mod settings;
 
 use settings::{Action, Settings};
+use settings::install::InstallInfo;
 use commands::record::RecordLocation;
 use failure::Error;
 use url::Url;
@@ -31,10 +33,12 @@ enum CommandResult {
 
 fn main() {
     let settings = Settings::new().unwrap();
+    let install_info = InstallInfo::new().unwrap();
 
     let result = match settings.action {
         Action::Authenticate => CommandResult::Authenticate(commands::authenticate::go(
             settings.authenticate.unwrap(),
+            install_info,
             settings.api_url,
         )),
         Action::Record => CommandResult::Record(commands::record::go(

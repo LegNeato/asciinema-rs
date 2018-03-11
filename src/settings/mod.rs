@@ -6,7 +6,7 @@ use failure::Error;
 
 mod cli;
 mod config;
-mod install;
+pub mod install;
 
 use self::config::AsciinemaConfig;
 use self::cli::CommandLine;
