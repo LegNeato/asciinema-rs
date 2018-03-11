@@ -6,18 +6,21 @@ use failure::Error;
 
 mod cli;
 mod config;
+mod install;
 
 use self::config::AsciinemaConfig;
 use self::cli::CommandLine;
 
 pub enum Action {
+    Authenticate,
     Record,
 }
 
 pub struct Settings {
     pub action: Action,
     pub api_url: Url,
-    pub record: RecordSettings,
+    pub authenticate: Option<AuthenticateSettings>,
+    pub record: Option<RecordSettings>,
 }
 
 impl Settings {
@@ -34,10 +37,17 @@ impl Settings {
 
         // Get settings to override from the command line.
         match CommandLine::from_args() {
+            CommandLine::Authenticate { 0: x } => Ok(Settings {
+                action: Action::Authenticate,
+                api_url,
+                authenticate: Some(AuthenticateSettings { ..x }),
+                record: None,
+            }),
             CommandLine::Record { 0: x } => Ok(Settings {
                 action: Action::Record,
                 api_url,
-                record: RecordSettings { ..x },
+                authenticate: None,
+                record: Some(RecordSettings { ..x }),
             }),
         }
     }
@@ -76,4 +86,9 @@ pub struct ApiSettings {
     #[structopt(default_value = "https://asciinema.org")]
     #[serde(with = "url_serde")]
     pub url: Option<Url>,
+}
+
+#[derive(StructOpt, Clone, Debug, Deserialize)]
+pub struct AuthenticateSettings {
+    pub id: Option<String>,
 }

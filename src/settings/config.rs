@@ -6,7 +6,7 @@ use super::{ApiSettings, RecordSettings};
 
 // Newtypes so we can keep the containing dir vs config file straight.
 #[derive(Debug)]
-struct AsciinemaConfigDir(PathBuf);
+pub struct AsciinemaConfigDir(pub PathBuf);
 #[derive(Debug)]
 struct AsciinemaConfigFile(PathBuf);
 
@@ -39,7 +39,7 @@ impl AsciinemaConfig {
 
 /// Finds the location in home directory to write configuration to using
 /// strategy from https://asciinema.org/docs/config.
-fn get_config_dir() -> Result<AsciinemaConfigDir, Error> {
+pub fn get_config_dir() -> Result<AsciinemaConfigDir, Error> {
     // If config location explictly set, use the value.
     if let Ok(config_home) = env::var("ASCIINEMA_CONFIG_HOME") {
         return Ok(AsciinemaConfigDir(PathBuf::from(config_home)));
