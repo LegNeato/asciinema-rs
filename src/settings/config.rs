@@ -1,7 +1,7 @@
 use failure::Error;
 use std::path::PathBuf;
 use std::env;
-use config::{Config, ConfigError, File};
+use config::{Config, ConfigError, Environment, File};
 use super::{ApiSettings, RecordSettings};
 
 // Newtypes so we can keep the containing dir vs config file straight.
@@ -29,6 +29,7 @@ impl AsciinemaConfig {
 
         let mut s = Config::new();
         s.merge(File::from(location.0).required(false))?;
+        s.merge(Environment::with_prefix("asciinema"))?;
 
         match s.try_into() {
             Ok(x) => Ok(x),
@@ -74,6 +75,7 @@ fn get_config_file() -> Result<AsciinemaConfigFile, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use url::Url;
 
     fn test_env() {
         env::set_var("ASCIINEMA_CONFIG_HOME", "/ach");
@@ -115,6 +117,17 @@ mod tests {
         assert_eq!(
             format!("{}", get_config_dir().unwrap_err()),
             format!("{}", ConfigFailure::NoHome {}),
+        );
+    }
+
+    #[test]
+    fn env_overwrites_api_url() {
+        test_env();
+        env::set_var("ASCIINEMA_API_URL", "http://www.example.com");
+        let c = AsciinemaConfig::new().unwrap();
+        assert_eq!(
+            c.api.unwrap().url.unwrap(),
+            Url::parse("http://www.example.com").unwrap()
         );
     }
 }
