@@ -5,7 +5,7 @@ use settings::AuthenticateSettings;
 use settings::install::InstallInfo;
 use uuid::Uuid;
 
-fn get_connect_url(base_url: Url, uuid: Uuid) -> Result<Url, url::ParseError> {
+fn get_authentication_url(base_url: Url, uuid: Uuid) -> Result<Url, url::ParseError> {
     base_url
         .join("/connect/")?
         .join(&uuid.hyphenated().to_string())
@@ -28,5 +28,5 @@ pub fn go(settings: AuthenticateSettings, api_url: Url) -> Result<Url, Error> {
         install_info.save()?;
     }
 
-    Ok(get_connect_url(api_url, id)?)
+    Ok(get_authentication_url(api_url, id)?)
 }
