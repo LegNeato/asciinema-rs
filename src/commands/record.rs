@@ -26,6 +26,8 @@ use failure::ResultExt;
 use url::Url;
 use termion;
 
+use settings::RecordSettings;
+
 #[derive(Debug, Fail)]
 enum RecordFailure {
     #[fail(display = "unable to write to file: {}: file exists", path)] FileExists { path: String },
@@ -100,16 +102,16 @@ pub struct Options {
     pub file: Option<PathBuf>,
 }
 
-fn make_writer(options: Options) -> Result<LineWriter<Box<Write>>, Error> {
-    match options.file {
-        Some(x) => {
+fn make_writer(settings: &RecordSettings) -> Result<LineWriter<Box<Write>>, Error> {
+    match settings.file {
+        Some(ref x) => {
             let exists = x.as_path().exists();
             // Create a new file if it doesn't exist or we were told to overwrite.
-            if !exists || exists && options.overwrite {
+            if !exists || exists && settings.overwrite {
                 let f = File::create(x).context("Cannot create file")?;
                 return Ok(LineWriter::new(Box::new(f)));
             }
-            if exists && options.append {
+            if exists && settings.append {
                 // Append to existing file if we are told to do so.
                 let f = OpenOptions::new().write(true).append(true).open(x)?;
                 return Ok(LineWriter::new(Box::new(f)));
@@ -126,10 +128,10 @@ fn make_writer(options: Options) -> Result<LineWriter<Box<Write>>, Error> {
     }
 }
 
-pub fn go(options: Options) -> ::std::result::Result<RecordLocation, Error> {
+pub fn go(settings: RecordSettings, api_url: Url) -> Result<RecordLocation, Error> {
     let (cols, rows) = termion::terminal_size().context("Cannot get terminal size")?;
 
-    let mut writer: LineWriter<Box<Write>> = make_writer(options.clone())?;
+    let mut writer: LineWriter<Box<Write>> = make_writer(&settings)?;
 
     let header = asciicast::Header {
         version: 2,
@@ -137,9 +139,10 @@ pub fn go(options: Options) -> ::std::result::Result<RecordLocation, Error> {
         height: u32::from(rows),
         timestamp: Some(Utc::now()),
         duration: None,
-        idle_time_limit: options.idle_time_limit,
+        idle_time_limit: settings.idle_time_limit,
+        // TODO: Command support.
         command: None,
-        title: options.title,
+        title: settings.title,
     };
     let json_header = serde_json::to_string(&header).context("Cannot convert header to JSON")?;
 
@@ -168,8 +171,8 @@ pub fn go(options: Options) -> ::std::result::Result<RecordLocation, Error> {
     child.wait()?;
 
     // Return where recorded asciicast can be found.
-    Ok(match options.file {
+    Ok(match settings.file {
         Some(p) => RecordLocation::Local(p),
-        None => RecordLocation::Remote(Url::parse("http://www.example.com")?),
+        None => RecordLocation::Remote(api_url),
     })
 }

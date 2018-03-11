@@ -4,13 +4,17 @@ version = "0.1.0"
 authors = ["Christian Legnitto <christian@legnitto.com>"]
 
 [dependencies]
+config = "0.8"
 failure = "0.1.1"
 termcolor = "0.3"
 structopt = "0.2"
 libc = "0.2.36"
 asciicast = "0.1.1"
 chrono = { version = "0.4", features = ["serde"] }
+serde_derive = "^1.0.8"
+serde = "^1.0.8"
 serde_json = "1.0"
 pty-shell = { path = "pty-shell" }
 url = "1.7.0"
+url_serde = "0.2.0"
 termion = "1.0.0"
