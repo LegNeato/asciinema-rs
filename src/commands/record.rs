@@ -13,6 +13,7 @@ use chrono::Utc;
 use std::env;
 use std::str;
 use std::io;
+use uploader::UploadBuilder;
 
 use std::io::LineWriter;
 use pty_shell::*;
@@ -128,7 +129,7 @@ fn make_writer(settings: &RecordSettings) -> Result<LineWriter<Box<Write>>, Erro
     }
 }
 
-pub fn go(settings: RecordSettings, api_url: Url) -> Result<RecordLocation, Error> {
+pub fn go(settings: RecordSettings, _builder: &mut UploadBuilder) -> Result<RecordLocation, Error> {
     let (cols, rows) = termion::terminal_size().context("Cannot get terminal size")?;
 
     let mut writer: LineWriter<Box<Write>> = make_writer(&settings)?;
@@ -173,6 +174,6 @@ pub fn go(settings: RecordSettings, api_url: Url) -> Result<RecordLocation, Erro
     // Return where recorded asciicast can be found.
     Ok(match settings.file {
         Some(p) => RecordLocation::Local(p),
-        None => RecordLocation::Remote(api_url),
+        None => RecordLocation::Remote(Url::parse("http://www.example.com").unwrap()),
     })
 }

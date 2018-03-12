@@ -21,3 +21,4 @@ url_serde = "0.2.0"
 termion = "1.0.0"
 uuid = { version = "0.6", features = ["v4", "serde"] }
 os_type = "2.0.0"
+derive_builder = "0.5.1"

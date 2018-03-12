@@ -2,6 +2,8 @@ extern crate asciicast;
 extern crate chrono;
 extern crate config;
 #[macro_use]
+extern crate derive_builder;
+#[macro_use]
 extern crate failure;
 extern crate libc;
 extern crate os_type;
@@ -21,11 +23,15 @@ extern crate uuid;
 
 mod commands;
 mod settings;
+mod uploader;
+mod api;
 
 use settings::{Action, Settings};
 use commands::record::RecordLocation;
 use failure::Error;
 use url::Url;
+use uploader::UploadBuilder;
+use api::Api;
 
 enum CommandResult {
     Authenticate(Result<Url, Error>),
@@ -35,19 +41,20 @@ enum CommandResult {
 
 fn main() {
     let settings = Settings::new().unwrap();
+    let api = Api::new(settings.api_url).unwrap();
 
     let result = match settings.action {
         Action::Authenticate => CommandResult::Authenticate(commands::authenticate::go(
             settings.authenticate.unwrap(),
-            settings.api_url,
+            api,
         )),
         Action::Record => CommandResult::Record(commands::record::go(
             settings.record.unwrap(),
-            settings.api_url,
+            UploadBuilder::default().api(api),
         )),
         Action::Upload => CommandResult::Upload(commands::upload::go(
             settings.upload.unwrap(),
-            settings.api_url,
+            UploadBuilder::default().api(api),
         )),
     };
 

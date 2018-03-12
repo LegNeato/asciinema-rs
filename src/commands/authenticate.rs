@@ -4,14 +4,13 @@ use url::Url;
 use settings::AuthenticateSettings;
 use settings::install::InstallInfo;
 use uuid::Uuid;
+use api::Api;
 
-fn get_authentication_url(base_url: Url, uuid: Uuid) -> Result<Url, url::ParseError> {
-    base_url
-        .join("/connect/")?
-        .join(&uuid.hyphenated().to_string())
+fn make_authentication_url(url: Url, uuid: Uuid) -> Result<Url, url::ParseError> {
+    url.join(&uuid.hyphenated().to_string())
 }
 
-pub fn go(settings: AuthenticateSettings, api_url: Url) -> Result<Url, Error> {
+pub fn go(settings: AuthenticateSettings, api: Api) -> Result<Url, Error> {
     // Load install id from a file or generate a new one.
     let mut install_info = InstallInfo::new()?;
 
@@ -28,5 +27,5 @@ pub fn go(settings: AuthenticateSettings, api_url: Url) -> Result<Url, Error> {
         install_info.save()?;
     }
 
-    Ok(get_authentication_url(api_url, id)?)
+    Ok(make_authentication_url(api.authentication_url(), id)?)
 }
