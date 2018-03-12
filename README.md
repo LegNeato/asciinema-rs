@@ -59,11 +59,11 @@ contributors and is a great project for Rust beginners. **Please contribute!**
 
 #### Auth (`asciinema auth`)
 
-* [x] Authenticate via an install-id.
+* [x] Authenticate via an install-id
 
 #### Upload (`asciinema upload`)
 
-* [x] Upload saved asciicast session.
+* [x] Upload saved asciicast session
 
 #### Play (`asciinema play`)
 
