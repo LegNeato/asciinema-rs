@@ -17,15 +17,8 @@ pub fn go(settings: AuthenticateSettings, api: Api) -> Result<Url, Error> {
     // Use and save any manually passed in install id.
     if let Some(new_id) = settings.install_id {
         install_info.id = new_id;
-        install_info.is_saved = false;
-    }
-
-    let id = install_info.id;
-
-    // Persist the install id to a file.
-    if !install_info.is_saved {
         install_info.save()?;
     }
 
-    Ok(make_authentication_url(api.authentication_url(), id)?)
+    Ok(make_authentication_url(api.authentication_url(), install_info.id)?)
 }

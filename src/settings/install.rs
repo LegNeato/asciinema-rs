@@ -17,7 +17,6 @@ fn get_install_id_file() -> Result<PathBuf, Error> {
 #[derive(Clone, Debug, Deserialize)]
 pub struct InstallInfo {
     pub id: Uuid,
-    pub is_saved: bool,
     pub location: PathBuf,
 }
 
@@ -35,24 +34,24 @@ impl InstallInfo {
 
             Ok(InstallInfo {
                 id,
-                is_saved: true,
                 location,
             })
         } else {
-            Ok(InstallInfo {
+            // The reference python client always saves.
+            let info = InstallInfo {
                 id: Uuid::new_v4(),
-                is_saved: false,
                 location,
-            })
+            };
+            info.save()?;
+            Ok(info)
         }
     }
 
-    pub fn save(mut self) -> Result<(), Error> {
+    pub fn save(&self) -> Result<(), Error> {
         create_dir_all(self.location.parent().unwrap())?;
         // Write the file.
         let mut f = File::create(&self.location)?;
         f.write_all(self.id.hyphenated().to_string().as_bytes())?;
-        self.is_saved = true;
         Ok(())
     }
 }
@@ -64,10 +63,11 @@ impl FromStr for InstallInfo {
         let id = Uuid::parse_str(s.trim())?;
         let location = get_install_id_file()?;
 
-        Ok(InstallInfo {
+        let info = InstallInfo {
             id,
-            is_saved: false,
             location,
-        })
+        };
+        info.save()?;
+        Ok(info)
     }
 }

@@ -32,6 +32,8 @@ use failure::Error;
 use url::Url;
 use uploader::UploadBuilder;
 use api::Api;
+use settings::install::InstallInfo;
+
 
 enum CommandResult {
     Authenticate(Result<Url, Error>),
@@ -42,6 +44,10 @@ enum CommandResult {
 fn main() {
     let settings = Settings::new().unwrap();
     let api = Api::new(settings.api_url).unwrap();
+    // Load install id from a file or generate a new one.
+    // Note: the reference python version doesn't fail when
+    // there is no existing install id, so we don't either.
+    let install_info = InstallInfo::new().unwrap();
 
     let result = match settings.action {
         Action::Authenticate => CommandResult::Authenticate(commands::authenticate::go(
@@ -50,11 +56,11 @@ fn main() {
         )),
         Action::Record => CommandResult::Record(commands::record::go(
             settings.record.unwrap(),
-            UploadBuilder::default().api(api),
+            UploadBuilder::default().api(api).install_id(install_info.id),
         )),
         Action::Upload => CommandResult::Upload(commands::upload::go(
             settings.upload.unwrap(),
-            UploadBuilder::default().api(api),
+            UploadBuilder::default().api(api).install_id(install_info.id),
         )),
     };
 
