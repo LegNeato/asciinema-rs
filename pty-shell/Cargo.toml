@@ -1,6 +1,6 @@
 [package]
 name = 'pty-shell'
-version = '0.2.0'
+version = '0.3.0'
 authors = ['Hika Hibariya <hibariya@gmail.com>']
 repository = 'https://github.com/hibariya/pty-shell'
 homepage = 'https://github.com/hibariya/pty-shell'
