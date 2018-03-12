@@ -193,7 +193,7 @@ pub fn go(settings: RecordSettings, builder: &mut UploadBuilder) -> Result<Recor
             // Move the temporary file into the user-specified path.
             tmp.persist(&p)?;
             RecordLocation::Local(p)
-        },
+        }
         None => {
             // Upload the file to a remote service.
             // TODO: Prompt to upload like the python client does.

@@ -15,12 +15,12 @@ extern crate serde_derive;
 extern crate serde_json;
 #[macro_use]
 extern crate structopt;
+extern crate tempfile;
 extern crate termcolor;
 extern crate termion;
 extern crate url;
 extern crate url_serde;
 extern crate uuid;
-extern crate tempfile;
 
 mod commands;
 mod settings;
