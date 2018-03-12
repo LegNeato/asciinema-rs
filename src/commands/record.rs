@@ -146,6 +146,8 @@ pub fn go(settings: RecordSettings, builder: &mut UploadBuilder) -> Result<Recor
 
     let mut writer: LineWriter<Box<Write>> = LineWriter::new(Box::new(tmp_handle));
 
+    // TODO: Now that we always write to a tempfile and we don't support streaming,
+    // perhaps write the header at the end so we can fill out `duration`?
     let header = asciicast::Header {
         version: 2,
         width: u32::from(cols),
