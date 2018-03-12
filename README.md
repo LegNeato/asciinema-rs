@@ -1,4 +1,4 @@
-# [asciinema]
+# [asciinema][self]
 
 [![Build Status](https://travis-ci.org/LegNeato/asciinema-rs.svg?branch=master)](https://travis-ci.org/LegNeato/asciinema-rs)
 
@@ -82,6 +82,7 @@ contributors and is a great project for Rust beginners. **Please contribute!**
 
 Note that the reference [python implementation][original] is licensed under [GPLv3](https://github.com/asciinema/asciinema/blob/develop/LICENSE). This program is developed without looking at or using any of the code.
 
+[self]: https://github.com/LegNeato/asciinema-rs
 [asciinema]: https://asciinema.org
 [original]: https://github.com/asciinema/asciinema
 [issue.1]: https://github.com/LegNeato/asciinema-rs/issues/1
