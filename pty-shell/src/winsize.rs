@@ -6,8 +6,8 @@ use std::io;
 #[repr(C)]
 #[derive(PartialEq, Clone, Debug, Default)]
 pub struct Winsize {
-    pub ws_row: libc::c_ushort, // rows, in characters
-    pub ws_col: libc::c_ushort, // columns, in characters
+    pub ws_row: libc::c_ushort,    // rows, in characters
+    pub ws_col: libc::c_ushort,    // columns, in characters
     pub ws_xpixel: libc::c_ushort, // horizontal size, pixels
     pub ws_ypixel: libc::c_ushort, // vertical size, pixels
 }

@@ -3,7 +3,7 @@ use std::io::Result;
 use std::os::unix::io::AsRawFd;
 use termios::*;
 
-use ::tty;
+use tty;
 use winsize;
 
 static mut TERMIOS_TO_RESTORE: Option<Termios> = None;

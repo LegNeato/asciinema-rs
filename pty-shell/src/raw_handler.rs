@@ -5,7 +5,7 @@ use std::io::Read;
 use std::os::unix::io::AsRawFd;
 use super::PtyHandler;
 
-use ::tty;
+use tty;
 use winsize;
 
 pub const INPUT: Token = Token(0);
@@ -32,11 +32,12 @@ pub enum Message {
 }
 
 impl RawHandler {
-    pub fn new(input: unix::PipeReader,
-               output: unix::PipeReader,
-               pty: tty::Master,
-               handler: Box<PtyHandler>)
-               -> Self {
+    pub fn new(
+        input: unix::PipeReader,
+        output: unix::PipeReader,
+        pty: tty::Master,
+        handler: Box<PtyHandler>,
+    ) -> Self {
         RawHandler {
             input: input,
             output: output,
@@ -47,9 +48,11 @@ impl RawHandler {
     }
 
     pub fn register_sigwinch_handler() {
-        let sig_action = signal::SigAction::new(signal::SigHandler::Handler(handle_sigwinch),
-                                                signal::SaFlags::SA_RESTART,
-                                                signal::SigSet::empty());
+        let sig_action = signal::SigAction::new(
+            signal::SigHandler::Handler(handle_sigwinch),
+            signal::SaFlags::SA_RESTART,
+            signal::SigSet::empty(),
+        );
 
         unsafe {
             signal::sigaction(signal::SIGWINCH, &sig_action).unwrap();
@@ -85,7 +88,6 @@ impl Handler for RawHandler {
                 if events.is_readable() {
                     let mut buf = [0; 1024 * 10];
                     let nread = self.output.read(&mut buf).unwrap_or(0);
-
 
                     if nread <= 0 {
                         event_loop.shutdown();

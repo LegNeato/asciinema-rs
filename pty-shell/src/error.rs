@@ -1,6 +1,6 @@
-use std::{self, io, fmt};
+use std::{self, fmt, io};
 
-use ::tty;
+use tty;
 
 #[derive(Debug)]
 pub enum Error {

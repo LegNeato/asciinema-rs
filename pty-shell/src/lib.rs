@@ -1,13 +1,11 @@
-#![deny(missing_debug_implementations,
-        trivial_casts, trivial_numeric_casts,
-        unstable_features,
+#![deny(missing_debug_implementations, trivial_casts, trivial_numeric_casts, unstable_features,
         unused_import_braces, unused_qualifications)]
 
 extern crate libc;
+extern crate mio;
 extern crate nix;
 extern crate pty;
 extern crate termios;
-extern crate mio;
 
 pub use pty::prelude as tty;
 
@@ -81,14 +79,18 @@ fn do_proxy<H: PtyHandler + 'static>(pty: tty::Master, handler: H) -> Result<()>
         message_sender.send(Message::Shutdown).unwrap();
     });
 
-    try!(event_loop.register(&input_reader,
-                             INPUT,
-                             mio::EventSet::readable(),
-                             mio::PollOpt::level()));
-    try!(event_loop.register(&output_reader,
-                             OUTPUT,
-                             mio::EventSet::readable(),
-                             mio::PollOpt::level()));
+    try!(event_loop.register(
+        &input_reader,
+        INPUT,
+        mio::EventSet::readable(),
+        mio::PollOpt::level()
+    ));
+    try!(event_loop.register(
+        &output_reader,
+        OUTPUT,
+        mio::EventSet::readable(),
+        mio::PollOpt::level()
+    ));
     RawHandler::register_sigwinch_handler();
 
     let mut raw_handler =
@@ -103,9 +105,10 @@ fn do_proxy<H: PtyHandler + 'static>(pty: tty::Master, handler: H) -> Result<()>
     Ok(())
 }
 
-fn handle_input(writer: &mut tty::Master,
-                handler_writer: &mut mio::unix::PipeWriter)
-                -> Result<()> {
+fn handle_input(
+    writer: &mut tty::Master,
+    handler_writer: &mut mio::unix::PipeWriter,
+) -> Result<()> {
     let mut input = io::stdin();
     let mut buf = [0; 128];
 
@@ -117,9 +120,10 @@ fn handle_input(writer: &mut tty::Master,
     }
 }
 
-fn handle_output(reader: &mut tty::Master,
-                 handler_writer: &mut mio::unix::PipeWriter)
-                 -> Result<()> {
+fn handle_output(
+    reader: &mut tty::Master,
+    handler_writer: &mut mio::unix::PipeWriter,
+) -> Result<()> {
     let mut output = io::stdout();
     let mut buf = [0; 1024 * 10];
 
@@ -186,7 +190,8 @@ impl PtyCallbackBuilder {
     }
 
     pub fn input<F>(mut self, handler: F) -> Self
-        where F: FnMut(&[u8]) + 'static
+    where
+        F: FnMut(&[u8]) + 'static,
     {
         self.0.input_handler = Box::new(handler);
 
@@ -194,7 +199,8 @@ impl PtyCallbackBuilder {
     }
 
     pub fn output<F>(mut self, handler: F) -> Self
-        where F: FnMut(&[u8]) + 'static
+    where
+        F: FnMut(&[u8]) + 'static,
     {
         self.0.output_handler = Box::new(handler);
 
@@ -202,7 +208,8 @@ impl PtyCallbackBuilder {
     }
 
     pub fn resize<F>(mut self, handler: F) -> Self
-        where F: FnMut(&Winsize) + 'static
+    where
+        F: FnMut(&Winsize) + 'static,
     {
         self.0.resize_handler = Box::new(handler);
 
@@ -210,7 +217,8 @@ impl PtyCallbackBuilder {
     }
 
     pub fn shutdown<F>(mut self, handler: F) -> Self
-        where F: FnMut() + 'static
+    where
+        F: FnMut() + 'static,
     {
         self.0.shutdown_handler = Box::new(handler);
 
