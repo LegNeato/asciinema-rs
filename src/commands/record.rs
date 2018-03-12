@@ -29,7 +29,8 @@ use settings::RecordSettings;
 
 #[derive(Debug, Fail)]
 enum RecordFailure {
-    #[fail(display = "unable to write to file: {}: file exists", path)] FileExists { path: String },
+    #[fail(display = "unable to write to file: {}: file exists", path)]
+    FileExists { path: String },
 }
 
 pub enum RecordLocation {

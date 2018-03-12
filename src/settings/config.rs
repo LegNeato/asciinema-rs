@@ -12,8 +12,10 @@ struct AsciinemaConfigFile(PathBuf);
 
 #[derive(Debug, Fail)]
 enum ConfigFailure {
-    #[fail(display = "unable to find home directory")] NoHome {},
-    #[fail(display = "{}", _0)] ConfigFileParsingError(#[cause] ConfigError),
+    #[fail(display = "unable to find home directory")]
+    NoHome {},
+    #[fail(display = "{}", _0)]
+    ConfigFileParsingError(#[cause] ConfigError),
 }
 
 #[derive(Debug, Deserialize)]

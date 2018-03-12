@@ -12,7 +12,8 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Fail)]
 enum UploadFailure {
-    #[fail(display = "server failed to return a URL")] InvalidResponseLocation {},
+    #[fail(display = "server failed to return a URL")]
+    InvalidResponseLocation {},
 }
 
 fn user_agent_string() -> String {
