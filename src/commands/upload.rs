@@ -1,6 +1,5 @@
 use failure::{err_msg, Error};
 use settings::UploadSettings;
-use settings::install::InstallInfo;
 use uploader::UploadBuilder;
 use url::Url;
 

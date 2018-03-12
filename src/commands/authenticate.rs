@@ -20,5 +20,8 @@ pub fn go(settings: AuthenticateSettings, api: Api) -> Result<Url, Error> {
         install_info.save()?;
     }
 
-    Ok(make_authentication_url(api.authentication_url(), install_info.id)?)
+    Ok(make_authentication_url(
+        api.authentication_url(),
+        install_info.id,
+    )?)
 }

@@ -34,7 +34,6 @@ use uploader::UploadBuilder;
 use api::Api;
 use settings::install::InstallInfo;
 
-
 enum CommandResult {
     Authenticate(Result<Url, Error>),
     Record(Result<RecordLocation, Error>),
@@ -56,11 +55,15 @@ fn main() {
         )),
         Action::Record => CommandResult::Record(commands::record::go(
             settings.record.unwrap(),
-            UploadBuilder::default().api(api).install_id(install_info.id),
+            UploadBuilder::default()
+                .api(api)
+                .install_id(install_info.id),
         )),
         Action::Upload => CommandResult::Upload(commands::upload::go(
             settings.upload.unwrap(),
-            UploadBuilder::default().api(api).install_id(install_info.id),
+            UploadBuilder::default()
+                .api(api)
+                .install_id(install_info.id),
         )),
     };
 

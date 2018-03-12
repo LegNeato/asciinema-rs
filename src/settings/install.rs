@@ -32,10 +32,7 @@ impl InstallInfo {
 
             let id = Uuid::parse_str(contents.trim())?;
 
-            Ok(InstallInfo {
-                id,
-                location,
-            })
+            Ok(InstallInfo { id, location })
         } else {
             // The reference python client always saves.
             let info = InstallInfo {
@@ -63,10 +60,7 @@ impl FromStr for InstallInfo {
         let id = Uuid::parse_str(s.trim())?;
         let location = get_install_id_file()?;
 
-        let info = InstallInfo {
-            id,
-            location,
-        };
+        let info = InstallInfo { id, location };
         info.save()?;
         Ok(info)
     }
