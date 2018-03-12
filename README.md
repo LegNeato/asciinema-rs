@@ -42,20 +42,20 @@ contributors and is a great project for Rust beginners. **Please contribute!**
 #### Record (`asciinema rec`)
 
 * [x] Record `stdout`
-* [ ] Record `stdin` via `--stdin`
+* [ ] [Record `stdin` via `--stdin`][issue.4]
 * [x] Upload to remote server
 * [x] Save to local file
-* [ ] Prompt for where to save after recording
+* [ ] [Prompt for where to save after recording][issue.5]
 * [x] Append to output via `--append`
-* [ ] Save only raw stdout output via `--raw`
+* [ ] [Save only raw stdout output via `--raw`][issue.6]
 * [x] `--overwrite`
-* [ ] Run a command via `--command`
-* [ ] By default capture `SHELL` and `TERM` environment variables
-* [ ] Specify environment variables to capture via `--env`
+* [ ] [Run a command via `--command`][issue.3]
+* [ ] [By default capture `SHELL` and `TERM` environment variables][issue.7]
+* [ ] [Specify environment variables to capture via `--env`][issue.8]
 * [x] Set a title via `--title`
 * [x] Set an idle limit via `--idle-time-limit`
-* [ ] Answer yes to all prompts via `--yes`
-* [ ] Quiet output via `--quiet`
+* [ ] [Answer yes to all prompts via `--yes`][issue.9]
+* [ ] [Quiet output via `--quiet`][issue.10]
 
 #### Auth (`asciinema auth`)
 
@@ -67,11 +67,11 @@ contributors and is a great project for Rust beginners. **Please contribute!**
 
 #### Play (`asciinema play`)
 
-* [ ] Implement `play` command
+* [ ] [Implement `play` command][issue.1]
 
 #### Cat (`asciinema cat`)
 
-* [ ] Implement `cat` command
+* [ ] [Implement `cat` command][issue.2]
 
 ### License
 
@@ -84,3 +84,13 @@ Note that the reference [python implementation][original] is licensed under [GPL
 
 [asciinema]: https://asciinema.org
 [original]: https://github.com/asciinema/asciinema
+[issue.1]: https://github.com/LegNeato/asciinema-rs/issues/1
+[issue.2]: https://github.com/LegNeato/asciinema-rs/issues/2
+[issue.3]: https://github.com/LegNeato/asciinema-rs/issues/3
+[issue.4]: https://github.com/LegNeato/asciinema-rs/issues/4
+[issue.5]: https://github.com/LegNeato/asciinema-rs/issues/5
+[issue.6]: https://github.com/LegNeato/asciinema-rs/issues/6
+[issue.7]: https://github.com/LegNeato/asciinema-rs/issues/7
+[issue.8]: https://github.com/LegNeato/asciinema-rs/issues/8
+[issue.9]: https://github.com/LegNeato/asciinema-rs/issues/9
+[issue.10]: https://github.com/LegNeato/asciinema-rs/issues/10
