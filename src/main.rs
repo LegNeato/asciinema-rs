@@ -20,6 +20,7 @@ extern crate termion;
 extern crate url;
 extern crate url_serde;
 extern crate uuid;
+extern crate tempfile;
 
 mod commands;
 mod settings;

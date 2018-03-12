@@ -7,12 +7,10 @@ extern crate url;
 
 extern crate serde_json;
 
-use std::fs::File;
 use std::io::prelude::*;
 use chrono::Utc;
 use std::env;
 use std::str;
-use std::io;
 use uploader::UploadBuilder;
 
 use std::io::LineWriter;
@@ -20,12 +18,12 @@ use pty_shell::*;
 use std::time::Instant;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use std::path::PathBuf;
-use std::fs::OpenOptions;
 use std::result::Result;
-use failure::Error;
+use failure::{err_msg, Error};
 use failure::ResultExt;
 use url::Url;
 use termion;
+use tempfile::NamedTempFile;
 
 use settings::RecordSettings;
 
@@ -103,36 +101,50 @@ pub struct Options {
     pub file: Option<PathBuf>,
 }
 
-fn make_writer(settings: &RecordSettings) -> Result<LineWriter<Box<Write>>, Error> {
+fn validate_output_path(settings: &RecordSettings) -> Result<(), Error> {
     match settings.file {
         Some(ref x) => {
             let exists = x.as_path().exists();
             // Create a new file if it doesn't exist or we were told to overwrite.
             if !exists || exists && settings.overwrite {
-                let f = File::create(x).context("Cannot create file")?;
-                return Ok(LineWriter::new(Box::new(f)));
+                return Ok(());
             }
             if exists && settings.append {
                 // Append to existing file if we are told to do so.
-                let f = OpenOptions::new().write(true).append(true).open(x)?;
-                return Ok(LineWriter::new(Box::new(f)));
+                return Ok(());
             }
 
             Err(RecordFailure::FileExists {
                 path: x.as_path().to_string_lossy().into_owned(),
             })?
         }
-        None => {
-            let w = io::Cursor::new(vec![0; 1_000]);
-            Ok(LineWriter::new(Box::new(w)))
-        }
+        None => Ok(()),
     }
 }
 
-pub fn go(settings: RecordSettings, _builder: &mut UploadBuilder) -> Result<RecordLocation, Error> {
+pub fn go(settings: RecordSettings, builder: &mut UploadBuilder) -> Result<RecordLocation, Error> {
+    // First check to see if we should even start recording.
+    validate_output_path(&settings)?;
+
     let (cols, rows) = termion::terminal_size().context("Cannot get terminal size")?;
 
-    let mut writer: LineWriter<Box<Write>> = make_writer(&settings)?;
+    // HACK: This is ugly, look away!
+    // 1. We create a named temp file so we can get the path. Why? Because our uploader uses
+    //    `reqwest` and it takes a `PathBuf`. It can take raw data but it needs to be `'static`
+    //    and I can't get it to work with lifetimes, so we'll just make sure we always have a
+    //    path.
+    // 2. We get the path.
+    // 3. We get a handle to the underlying file and send it to our writer. Why? Because the
+    //    tempfile will be moved to the writer and then dropped before we can read from it.
+    //    `tempfile` deletes files on `Drop`, so it is deleted before the rest of the program
+    //    can process it.
+    //
+    // Sigh, I need to get better at Rust but this works.
+    let tmp = NamedTempFile::new()?;
+    let tmp_path = tmp.path().to_path_buf();
+    let tmp_handle = tmp.reopen()?;
+
+    let mut writer: LineWriter<Box<Write>> = LineWriter::new(Box::new(tmp_handle));
 
     let header = asciicast::Header {
         version: 2,
@@ -140,10 +152,10 @@ pub fn go(settings: RecordSettings, _builder: &mut UploadBuilder) -> Result<Reco
         height: u32::from(rows),
         timestamp: Some(Utc::now()),
         duration: None,
-        idle_time_limit: settings.idle_time_limit,
+        idle_time_limit: settings.idle_time_limit.clone(),
         // TODO: Command support.
         command: None,
-        title: settings.title,
+        title: settings.title.clone(),
     };
     let json_header = serde_json::to_string(&header).context("Cannot convert header to JSON")?;
 
@@ -172,8 +184,19 @@ pub fn go(settings: RecordSettings, _builder: &mut UploadBuilder) -> Result<Reco
     child.wait()?;
 
     // Return where recorded asciicast can be found.
-    Ok(match settings.file {
-        Some(p) => RecordLocation::Local(p),
-        None => RecordLocation::Remote(Url::parse("http://www.example.com").unwrap()),
+    Ok(match settings.file.clone() {
+        Some(p) => {
+            // Check again to see if we should write recording.
+            validate_output_path(&settings)?;
+            // Move the temporary file into the user-specified path.
+            tmp.persist(&p)?;
+            RecordLocation::Local(p)
+        },
+        None => {
+            // Upload the file to a remote service.
+            // TODO: Prompt to upload like the python client does.
+            let uploader = builder.build().map_err(err_msg)?;
+            RecordLocation::Remote(uploader.upload_file(tmp_path)?)
+        }
     })
 }
