@@ -70,15 +70,17 @@ fn main() {
 
     std::process::exit(match result {
         CommandResult::Authenticate(x) => match x {
-            Ok(url) => handle_output(format!(
-                "Open the following URL in a web browser to \
-                 link your install ID with your asciinema.org user account:\
-                 \n\n{}\n\n\
-                 This will associate all recordings uploaded from this machine \
-                 (past and future ones) to your account, and allow you to manage \
-                 them (change title/theme, delete) at asciinema.org.",
-                url
-            ).as_str()),
+            Ok(url) => handle_output(
+                format!(
+                    "Open the following URL in a web browser to \
+                     link your install ID with your asciinema.org user account:\
+                     \n\n{}\n\n\
+                     This will associate all recordings uploaded from this machine \
+                     (past and future ones) to your account, and allow you to manage \
+                     them (change title/theme, delete) at asciinema.org.",
+                    url
+                ).as_str(),
+            ),
             Err(x) => handle_error(&x),
         },
         CommandResult::Record(x) => match x {
