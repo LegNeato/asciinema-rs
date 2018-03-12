@@ -1,3 +1,7 @@
+NOTE: This is a vendored version of https://github.com/hibariya/pty-shell, which looks to be unmaintained. Minimal changes have been made to make it build with the latest Rust, silence warnings, and update some dependencies.
+
+---
+
 # pty-shell
 
 An extension of pty crate.
