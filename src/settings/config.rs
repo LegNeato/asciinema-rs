@@ -39,7 +39,7 @@ impl AsciinemaConfig {
 }
 
 /// Finds the location in home directory to write configuration to using
-/// strategy from https://asciinema.org/docs/config.
+/// strategy from <https://asciinema.org/docs/config>.
 pub fn get_config_dir() -> Result<AsciinemaConfigDir, Error> {
     // If config location explictly set, use the value.
     if let Ok(config_home) = env::var("ASCIINEMA_CONFIG_HOME") {

@@ -51,17 +51,17 @@ fn main() {
 
     let result = match settings.action {
         Action::Authenticate => CommandResult::Authenticate(commands::authenticate::go(
-            settings.authenticate.unwrap(),
+            &settings.authenticate.unwrap(),
             api,
         )),
         Action::Record => CommandResult::Record(commands::record::go(
-            settings.record.unwrap(),
+            &settings.record.unwrap(),
             UploadBuilder::default()
                 .api(api)
                 .install_id(install_info.id),
         )),
         Action::Upload => CommandResult::Upload(commands::upload::go(
-            settings.upload.unwrap(),
+            &settings.upload.unwrap(),
             UploadBuilder::default()
                 .api(api)
                 .install_id(install_info.id),
@@ -78,8 +78,8 @@ fn main() {
                  (past and future ones) to your account, and allow you to manage \
                  them (change title/theme, delete) at asciinema.org.",
                 url
-            )),
-            Err(x) => handle_error(x),
+            ).as_str()),
+            Err(x) => handle_error(&x),
         },
         CommandResult::Record(x) => match x {
             Ok(location) => {
@@ -89,25 +89,25 @@ fn main() {
                     }
                     RecordLocation::Remote(url) => format!("{}", url),
                 };
-                handle_output(location_output)
+                handle_output(location_output.as_str())
             }
-            Err(x) => handle_error(x),
+            Err(x) => handle_error(&x),
         },
         CommandResult::Upload(x) => match x {
-            Ok(url) => handle_output(format!("{}", url)),
-            Err(x) => handle_error(x),
+            Ok(url) => handle_output(format!("{}", url).as_str()),
+            Err(x) => handle_error(&x),
         },
     })
 }
 
-fn handle_output(s: String) -> i32 {
+fn handle_output(s: &str) -> i32 {
     println!("{}", s);
     // If we don't do this, the prompt when we exit is too far right. ¯\_(ツ)_/¯
     print!("{}", termion::cursor::Left(s.chars().count() as u16));
     0
 }
 
-fn handle_error(e: Error) -> i32 {
+fn handle_error(e: &Error) -> i32 {
     eprintln!("{}", e);
     1
 }

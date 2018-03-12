@@ -8,7 +8,7 @@ use os_type;
 use api::Api;
 use std::path::PathBuf;
 
-const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Fail)]
 enum UploadFailure {
@@ -38,7 +38,7 @@ pub struct Upload {
 impl UploadBuilder {
     // Private helper method with access to the builder struct.
     fn get_current_user(&self) -> String {
-        env::var("USER").unwrap_or("Unknown".to_string())
+        env::var("USER").unwrap_or_else(|_| "Unknown".to_string())
     }
 }
 

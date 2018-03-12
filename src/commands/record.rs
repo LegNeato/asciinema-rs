@@ -122,9 +122,9 @@ fn validate_output_path(settings: &RecordSettings) -> Result<(), Error> {
     }
 }
 
-pub fn go(settings: RecordSettings, builder: &mut UploadBuilder) -> Result<RecordLocation, Error> {
+pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<RecordLocation, Error> {
     // First check to see if we should even start recording.
-    validate_output_path(&settings)?;
+    validate_output_path(settings)?;
 
     let (cols, rows) = termion::terminal_size().context("Cannot get terminal size")?;
 
@@ -154,7 +154,7 @@ pub fn go(settings: RecordSettings, builder: &mut UploadBuilder) -> Result<Recor
         height: u32::from(rows),
         timestamp: Some(Utc::now()),
         duration: None,
-        idle_time_limit: settings.idle_time_limit.clone(),
+        idle_time_limit: settings.idle_time_limit,
         // TODO: Command support.
         command: None,
         title: settings.title.clone(),
@@ -189,7 +189,7 @@ pub fn go(settings: RecordSettings, builder: &mut UploadBuilder) -> Result<Recor
     Ok(match settings.file.clone() {
         Some(p) => {
             // Check again to see if we should write recording.
-            validate_output_path(&settings)?;
+            validate_output_path(settings)?;
             // Move the temporary file into the user-specified path.
             tmp.persist(&p)?;
             RecordLocation::Local(p)
