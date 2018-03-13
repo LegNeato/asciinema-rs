@@ -35,11 +35,9 @@ asciinema rec -i 2.5 demo.cast
 
 ### Example
 
-Below is an example of the program recording itself.
+Below is an example recording where the program records itself.
 
-<center>
 <a href="https://asciinema.org/a/CYnuc8LuJ6WYSc9oDpiF1GDav"><img src="https://asciinema.org/a/CYnuc8LuJ6WYSc9oDpiF1GDav.png" width="50%"></a>
-</center>
 
 ### Feature Parity
 
