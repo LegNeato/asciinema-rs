@@ -14,7 +14,7 @@ use std::str;
 use uploader::UploadBuilder;
 use std::io::LineWriter;
 use pty_shell::*;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use std::path::PathBuf;
 use std::result::Result;
@@ -22,6 +22,7 @@ use failure::{err_msg, Error};
 use failure::ResultExt;
 use url::Url;
 use termion;
+use std;
 use tempfile::NamedTempFile;
 use settings::RecordSettings;
 
@@ -29,6 +30,36 @@ use settings::RecordSettings;
 enum RecordFailure {
     #[fail(display = "unable to write to file: {}: file exists", path)]
     FileExists { path: String },
+    #[fail(display = "unable to write asciicast entry: {}", _0)]
+    AsciicastEntryWrite(#[cause] std::io::Error),
+}
+
+fn get_elapsed_seconds(duration: &Duration) -> f64 {
+    duration.as_secs() as f64 + (0.000_000_001 * f64::from(duration.subsec_nanos()))
+}
+
+fn write_asciicast_event<W: ?Sized>(
+    writer: &mut LineWriter<Box<W>>,
+    event_type: asciicast::EventType,
+    since_start: Duration,
+    data: &[u8],
+) -> Result<(), Error>
+where
+    W: Write,
+{
+    // Generate asciicast entry.
+    let entry = asciicast::Entry {
+        time: get_elapsed_seconds(&since_start),
+        event_type,
+        event_data: str::from_utf8(data)?.to_string(),
+    };
+
+    // Serialize it to a JSON string.
+    let j = serde_json::to_string(&entry)?;
+
+    // Write it out.
+    writeln!(writer, "{}", j).map_err(|e| RecordFailure::AsciicastEntryWrite(e))?;
+    Ok(())
 }
 
 pub enum RecordLocation {
@@ -54,21 +85,12 @@ where
     }
 
     fn output(&mut self, output: &[u8]) {
-        let elapsed = self.clock.elapsed();
-        let elapsed_seconds: f64 =
-            elapsed.as_secs() as f64 + (0.000_000_001 * f64::from(elapsed.subsec_nanos()));
-
-        let entry = asciicast::Entry {
-            time: elapsed_seconds,
-            event_type: asciicast::EventType::Output,
-            event_data: str::from_utf8(output).unwrap().to_string(),
-        };
-
-        // Serialize it to a JSON string.
-        let j = serde_json::to_string(&entry).unwrap();
-        if let Err(e) = writeln!(self.writer, "{}", j) {
-            eprintln!("Couldn't write output entry: {}", e);
-        }
+        write_asciicast_event(
+            self.writer.by_ref(),
+            asciicast::EventType::Output,
+            self.clock.elapsed(),
+            output,
+        ).unwrap();
     }
 
     fn resize(&mut self, _winsize: &winsize::Winsize) {
@@ -181,4 +203,61 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
             RecordLocation::Remote(uploader.upload_file(tmp_path)?)
         }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use asciicast;
+    use std::io::Cursor;
+    use std::io::LineWriter;
+    use std::time::Duration;
+    use std::any::Any;
+
+    fn write_mock_asciicast_event(
+        event_type: asciicast::EventType,
+        duration: Duration,
+        data: String,
+    ) -> String {
+        // Tests write to memory.
+        let c = Cursor::new(vec![0; 15]);
+        let mut writer = LineWriter::new(Box::new(c));
+
+        // Serialize and write the event.
+        write_asciicast_event(&mut writer, event_type, duration, data.as_bytes()).unwrap();
+
+        // First we get our Box from the LineWriter.
+        let box_from_writer: Box<Any> = writer.into_inner().unwrap();
+        // Then we get our Cursor from the Box.
+        let c = box_from_writer.downcast::<Cursor<Vec<u8>>>().unwrap();
+        // Then we get the Vec from the Cursor.
+        let buff = c.into_inner();
+
+        // The Vec contains what was written...return it as a String.
+        String::from_utf8(buff).unwrap()
+    }
+
+    #[test]
+    fn test_elapsed_whole_seconds() {
+        let d = Duration::new(5, 0);
+        let result = get_elapsed_seconds(&d);
+        assert_eq!(result, 5.0);
+    }
+
+    #[test]
+    fn test_elapsed_fractional_seconds() {
+        let d = Duration::new(42, 123);
+        let result = get_elapsed_seconds(&d);
+        assert_eq!(result, 42.000000123);
+    }
+
+    #[test]
+    fn test_writing_asciicast_output_event() {
+        let result = write_mock_asciicast_event(
+            asciicast::EventType::Output,
+            Duration::new(123, 456),
+            "Hello world".to_string(),
+        );
+        assert_eq!(result, "[123.000000456,\"o\",\"Hello world\"]\n");
+    }
 }
