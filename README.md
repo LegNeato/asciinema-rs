@@ -7,10 +7,10 @@ Rust.
 
 ### Installation
 
-`asciinema` can be downloaded from the GitHub release page. There are no
-dependencies.
+Prebuilt `asciinema` binaries can be downloaded from [GitHub releases](https://github.com/LegNeato/asciinema-rs/releases). There are no
+dependencies and the binary can be run directly once downloaded.
 
-`asciinema` is not available on [crates.io](https://crates.io) due to https://github.com/rust-lang/cargo/issues/1565.
+(`asciinema` is not available on [crates.io](https://crates.io) due to https://github.com/rust-lang/cargo/issues/1565).
 
 ### Usage
 
