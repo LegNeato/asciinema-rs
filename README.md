@@ -33,6 +33,12 @@ asciinema rec -t "My git tutorial"
 asciinema rec -i 2.5 demo.cast
 ```
 
+### Example
+
+Below is an example of the program recording itself.
+
+[![asciicast](https://asciinema.org/a/CYnuc8LuJ6WYSc9oDpiF1GDav.png)](https://asciinema.org/a/CYnuc8LuJ6WYSc9oDpiF1GDav)
+
 ### Feature Parity
 
 We are not yet at 100% parity with the official binary. This project welcomes
