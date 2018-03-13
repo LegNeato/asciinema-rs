@@ -12,11 +12,11 @@ matrix:
   - rust: beta
   - rust: nightly
   - env: DEPLOY=1 TARGET=x86_64-apple-darwin
-    script: cargo build --release --target $TARGET --features=all
+    script: cargo build --release --target $TARGET
     os: osx
   - env: DEPLOY=1 TARGET=x86_64-unknown-linux-musl
     before_script: "./.ci/setup_musl.sh"
-    script: cargo build --release --target $TARGET --features=all
+    script: cargo build --release --target $TARGET
     addons:
       apt:
         packages:
