@@ -38,7 +38,7 @@ asciinema rec -i 2.5 demo.cast
 Below is an example of the program recording itself.
 
 <center>
-[<img src="https://asciinema.org/a/CYnuc8LuJ6WYSc9oDpiF1GDav.png" width="50%">](https://asciinema.org/a/CYnuc8LuJ6WYSc9oDpiF1GDav)
+<a href="https://asciinema.org/a/CYnuc8LuJ6WYSc9oDpiF1GDav"><img src="https://asciinema.org/a/CYnuc8LuJ6WYSc9oDpiF1GDav.png" width="50%"></a>
 </center>
 
 ### Feature Parity
