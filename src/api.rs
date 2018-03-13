@@ -9,7 +9,7 @@ pub struct Api {
 }
 
 impl Api {
-    pub fn new(base_url: Url) -> Result<Self, Error> {
+    pub fn new(base_url: &Url) -> Result<Self, Error> {
         // The `Url` trait treats trailing slashes as significant:
         // <https://docs.rs/url/*/url/struct.Url.html#method.join>
         // We make sure there is always a trailing slash so the joins
@@ -46,7 +46,7 @@ impl Api {
 
 impl Default for Api {
     fn default() -> Self {
-        Api::new(Url::parse("http://asciinema.org").unwrap()).unwrap()
+        Api::new(&Url::parse("http://asciinema.org").unwrap()).unwrap()
     }
 }
 
@@ -58,21 +58,21 @@ mod tests {
     #[test]
     fn base_url() {
         let base = Url::parse("http://www.example.com").unwrap();
-        let a = Api::new(base.clone()).unwrap();
+        let a = Api::new(&base).unwrap();
         assert_eq!(a.base_url(), base);
     }
 
     #[test]
     fn normalized_base_url() {
         let base = Url::parse("http://www.example.com/bar").unwrap();
-        let a = Api::new(base.clone()).unwrap();
+        let a = Api::new(&base).unwrap();
         assert_eq!(a.base_url().to_string(), format!("{}/", base));
     }
 
     #[test]
     fn authentication_url() {
         let base = Url::parse("http://www.example.com").unwrap();
-        let a = Api::new(base).unwrap();
+        let a = Api::new(&base).unwrap();
         assert_eq!(
             a.authentication_url().as_str(),
             "http://www.example.com/connect/"
@@ -82,7 +82,7 @@ mod tests {
     #[test]
     fn normalized_authentication_url() {
         let base = Url::parse("http://www.example.com/whatever").unwrap();
-        let a = Api::new(base).unwrap();
+        let a = Api::new(&base).unwrap();
         assert_eq!(
             a.authentication_url().as_str(),
             "http://www.example.com/whatever/connect/"
@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn upload_url() {
         let base = Url::parse("http://www.example.com").unwrap();
-        let a = Api::new(base).unwrap();
+        let a = Api::new(&base).unwrap();
         assert_eq!(
             a.upload_url().as_str(),
             "http://www.example.com/api/asciicasts"
@@ -102,7 +102,7 @@ mod tests {
     #[test]
     fn normalized_upload_url() {
         let base = Url::parse("http://www.example.com/blah").unwrap();
-        let a = Api::new(base).unwrap();
+        let a = Api::new(&base).unwrap();
         assert_eq!(
             a.upload_url().as_str(),
             "http://www.example.com/blah/api/asciicasts"

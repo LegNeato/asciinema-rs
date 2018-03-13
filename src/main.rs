@@ -43,7 +43,7 @@ enum CommandResult {
 
 fn main() {
     let settings = Settings::new().unwrap();
-    let api = Api::new(settings.api_url).unwrap();
+    let api = Api::new(&settings.api_url).unwrap();
     // Load install id from a file or generate a new one.
     // Note: the reference python version doesn't fail when
     // there is no existing install id, so we don't either.

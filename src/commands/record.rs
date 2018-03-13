@@ -58,7 +58,7 @@ where
     let j = serde_json::to_string(&entry)?;
 
     // Write it out.
-    writeln!(writer, "{}", j).map_err(|e| RecordFailure::AsciicastEntryWrite(e))?;
+    writeln!(writer, "{}", j).map_err(RecordFailure::AsciicastEntryWrite)?;
     Ok(())
 }
 
