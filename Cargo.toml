@@ -8,6 +8,8 @@ repository = "https://github.com/LegNeato/asciinema-rs"
 readme = "README.md"
 keywords = ["asciinema", "asciicast", "ascii", "tty", "riir"]
 license = "MIT/Apache-2.0"
+# https://github.com/rust-lang/cargo/issues/1565
+publish = false
 
 [dependencies]
 config = "0.8"
