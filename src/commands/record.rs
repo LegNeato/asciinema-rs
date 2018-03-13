@@ -12,7 +12,6 @@ use chrono::Utc;
 use std::env;
 use std::str;
 use uploader::UploadBuilder;
-
 use std::io::LineWriter;
 use pty_shell::*;
 use std::time::Instant;
@@ -24,7 +23,6 @@ use failure::ResultExt;
 use url::Url;
 use termion;
 use tempfile::NamedTempFile;
-
 use settings::RecordSettings;
 
 #[derive(Debug, Fail)]
@@ -81,25 +79,6 @@ where
         /* prepare for shutdown */
         self.writer.flush().unwrap();
     }
-}
-
-// TODO: Unify this with structopts in main.
-#[derive(Clone)]
-pub struct Options {
-    /// Title of the asciicast
-    pub title: Option<String>,
-    /// Limit recorded idle time to given number of seconds
-    pub idle_time_limit: Option<f64>,
-    /// Answer "yes" to all prompts (e.g. upload confirmation)
-    pub force_yes: bool,
-    /// Overwrite the file if it already exists
-    pub overwrite: bool,
-    /// Append to existing recording
-    pub append: bool,
-    /// Save only raw stdout output
-    pub raw: bool,
-    /// Filename/path to save the recording to
-    pub file: Option<PathBuf>,
 }
 
 fn validate_output_path(settings: &RecordSettings) -> Result<(), Error> {
