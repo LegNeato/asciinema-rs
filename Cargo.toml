@@ -31,3 +31,11 @@ uuid = { version = "0.6", features = ["v4", "serde"] }
 os_type = "2.0.0"
 derive_builder = "0.5.1"
 tempfile = "2.2.0"
+
+[package.metadata.release]
+dev-version-ext = "pre"
+pre-release-commit-message = "Release {{version}}"
+pro-release-commit-message = "Bump version to {{version}}"
+tag-prefix = "v"
+tag-message = "Release {{prefix}}{{version}}"
+upload-doc = false
