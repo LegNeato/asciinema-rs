@@ -1,14 +1,47 @@
 language: rust
 cache: cargo
 rust:
-  - stable
-  - beta
-  - nightly
+- stable
+- beta
+- nightly
+matrix:
+  include:
+  - os: linux
+  - os: osx
+  - rust: stable
+  - rust: beta
+  - rust: nightly
+  - env: DEPLOY=1 TARGET=x86_64-apple-darwin
+    script: cargo build --release --target $TARGET --features=all
+    os: osx
+  - env: DEPLOY=1 TARGET=x86_64-unknown-linux-musl
+    before_script: "./.ci/setup_musl.sh"
+    script: cargo build --release --target $TARGET --features=all
+    addons:
+      apt:
+        packages:
+        - musl-tools
 before_script:
-  - rustup toolchain install nightly
-  - rustup component add --toolchain nightly rustfmt-preview
-  - which rustfmt || cargo install --force rustfmt-nightly
+- rustup toolchain install nightly
+- rustup component add --toolchain nightly rustfmt-preview
+- which rustfmt || cargo install --force rustfmt-nightly
 script:
-  - cargo +nightly fmt --all -- --write-mode=diff
-  - cargo build
-  - cargo test -- --test-threads=1
+- cargo +nightly fmt --all -- --write-mode=diff
+- cargo build
+- cargo test -- --test-threads=1
+before_deploy:
+- name="asciinema-$TRAVIS_TAG-$TARGET"
+- mkdir $name
+- cp target/$TARGET/release/asciinema $name/
+- cp README.md LICENSE-* $name/
+- zip -r $name.zip $name
+deploy:
+  api_key:
+    secure: QMxu9JJPxLMwma79WgXA63oYrtmwOKz84y48CNud5wvSgjDk4l4QzWEzy6mWoQ1RlgSaaYne8Wx8TRlMOfkBIRxSqfgbpxN9rELRTCBLLX3pizyfezOWsdZdoYrd3suNuYvulsFU8AWc+miWwmWgnrT5GFJ5XOazH27bcHA2MHmScSwVIeB4zbZdqRL98mlyLM5EK5V1NGXK7A/iMJudmMf21iJJ1MWLTMmErBuhRDA38hJ9WfUFSi+yFJPiouFRIKQGixTv1s6kwFXg8xI1dXNFeCqiWuljeqMnZvfap5VCJaWeEUYxajmVegTwi46yEyDKiCp6/lUW969si3RFs1qKQves0fNYSCjxdxlvggy31O9ReFPlA5ICbGrodXQAeWMSAynSFM05rafXA9Sr4aqviVlDuKdAzRq7IWgosM124+fGwkkLmvbnOBnU+QKmSUhQlmNqDviAnddy39JBcp2lfUV+J75laNTNolH7L7bYI9XaSNwsMn3a0C2df5suP8mXan8l8j16KpBTwBgH+51CLCkAd52lOCcY30YwrdOQ85NVF2+vrhKTihPkTnoZ9j0lZ7xEmYNzQu613g+elQUGsclwx5E1Ki/z5y9B9XaMwKk0z6MVRwZcz++UyR8G8j+XZ6HjV9VzZjHJArdw1I4O0gZbYkjacrN5AI67uH4=
+  provider: releases
+  file_glob: true
+  file: asciinema-$TRAVIS_TAG-$TARGET.zip
+  on:
+    condition: $DEPLOY = 1
+    tags: true
+  skip_cleanup: true

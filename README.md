@@ -7,11 +7,10 @@ Rust.
 
 ### Installation
 
-`asciinema` is available on [crates.io](https://crates.io/crates/asciinema) and can be installed via Cargo:
+`asciinema` can be downloaded from the GitHub release page. There are no
+dependencies.
 
-```sh
-cargo install asciinema
-```
+`asciinema` is not available on [crates.io](https://crates.io) due to https://github.com/rust-lang/cargo/issues/1565.
 
 ### Usage
 

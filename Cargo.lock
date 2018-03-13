@@ -57,7 +57,7 @@ dependencies = [
  "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.39 (registry+https://github.com/rust-lang/crates.io-index)",
  "os_type 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pty-shell 0.2.0",
+ "pty-shell 0.3.0",
  "reqwest 0.8.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.30 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.30 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -812,7 +812,7 @@ dependencies = [
 
 [[package]]
 name = "pty-shell"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "libc 0.2.39 (registry+https://github.com/rust-lang/crates.io-index)",
  "mio 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
