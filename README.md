@@ -1,4 +1,4 @@
-# [asciinema][self]
+# [asciinema-rs][self]
 
 [![Build Status](https://travis-ci.org/LegNeato/asciinema-rs.svg?branch=master)](https://travis-ci.org/LegNeato/asciinema-rs)
 
