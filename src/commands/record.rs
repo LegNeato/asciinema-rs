@@ -213,6 +213,33 @@ mod tests {
     use std::io::LineWriter;
     use std::time::Duration;
     use std::any::Any;
+    use settings::RecordSettings;
+    use std::path::PathBuf;
+
+    enum FileBehavior {
+        NotSet,
+        Append,
+        Overwrite,
+    }
+
+    fn get_mock_settings(file: Option<PathBuf>, behavior: FileBehavior) -> RecordSettings {
+        let mut append = false;
+        let mut overwrite = false;
+        match behavior {
+            FileBehavior::Append => append = true,
+            FileBehavior::Overwrite => overwrite = true,
+            FileBehavior::NotSet => (),
+        };
+        RecordSettings {
+            append,
+            overwrite,
+            file,
+            force_yes: false,
+            idle_time_limit: None,
+            raw: false,
+            title: None,
+        }
+    }
 
     fn write_mock_asciicast_event(
         event_type: asciicast::EventType,
@@ -259,5 +286,59 @@ mod tests {
             "Hello world".to_string(),
         );
         assert_eq!(result, "[123.000000456,\"o\",\"Hello world\"]\n");
+    }
+
+    #[test]
+    fn test_unset_output_path() {
+        let result = validate_output_path(&get_mock_settings(None, FileBehavior::NotSet));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_nonexistent_output_path() {
+        let result = validate_output_path(&get_mock_settings(
+            Some(PathBuf::from("/does_not_exist.txt")),
+            FileBehavior::NotSet,
+        ));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_existent_output_path() {
+        let result = validate_output_path(&get_mock_settings(
+            // Current directory always exists.
+            Some(PathBuf::from(".")),
+            FileBehavior::NotSet,
+        ));
+        // TODO: Figure out a better way to check this.
+        assert_eq!(
+            format!("{}", result.unwrap_err()),
+            format!(
+                "{}",
+                RecordFailure::FileExists {
+                    path: ".".to_string(),
+                }
+            ),
+        );
+    }
+
+    #[test]
+    fn test_existent_output_path_with_overwrite() {
+        let result = validate_output_path(&get_mock_settings(
+            // Current directory always exists.
+            Some(PathBuf::from(".")),
+            FileBehavior::Overwrite,
+        ));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_existent_output_path_with_append() {
+        let result = validate_output_path(&get_mock_settings(
+            // Current directory always exists.
+            Some(PathBuf::from(".")),
+            FileBehavior::Append,
+        ));
+        assert!(result.is_ok());
     }
 }
