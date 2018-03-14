@@ -304,6 +304,15 @@ mod tests {
     }
 
     #[test]
+    fn test_nonexistent_output_path_with_append() {
+        let result = validate_output_path(&get_mock_settings(
+            Some(PathBuf::from("/does_not_exist.txt")),
+            FileBehavior::Append,
+        ));
+        assert!(result.is_ok());
+    }
+
+    #[test]
     fn test_existent_output_path() {
         let result = validate_output_path(&get_mock_settings(
             // Current directory always exists.
