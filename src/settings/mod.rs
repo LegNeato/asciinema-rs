@@ -14,6 +14,7 @@ use self::cli::CommandLine;
 
 pub enum Action {
     Authenticate,
+    Concatenate,
     Record,
     Upload,
 }
@@ -22,6 +23,7 @@ pub struct Settings {
     pub action: Action,
     pub api_url: Url,
     pub authenticate: Option<AuthenticateSettings>,
+    pub concatenate: Option<ConcatenateSettings>,
     pub record: Option<RecordSettings>,
     pub upload: Option<UploadSettings>,
 }
@@ -44,6 +46,15 @@ impl Settings {
                 action: Action::Authenticate,
                 api_url,
                 authenticate: Some(AuthenticateSettings { ..x }),
+                concatenate: None,
+                record: None,
+                upload: None,
+            }),
+            CommandLine::Concatenate { 0: x } => Ok(Settings {
+                action: Action::Concatenate,
+                api_url,
+                authenticate: None,
+                concatenate: Some(ConcatenateSettings { ..x }),
                 record: None,
                 upload: None,
             }),
@@ -51,6 +62,7 @@ impl Settings {
                 action: Action::Record,
                 api_url,
                 authenticate: None,
+                concatenate: None,
                 record: Some(RecordSettings { ..x }),
                 upload: None,
             }),
@@ -58,6 +70,7 @@ impl Settings {
                 action: Action::Upload,
                 api_url,
                 authenticate: None,
+                concatenate: None,
                 record: None,
                 upload: Some(UploadSettings { ..x }),
             }),
@@ -112,4 +125,11 @@ pub struct UploadSettings {
     /// Filename/path of local recording
     #[structopt(name = "FILE", parse(from_os_str))]
     pub file: PathBuf,
+}
+
+#[derive(StructOpt, Clone, Debug, Deserialize)]
+pub struct ConcatenateSettings {
+    /// Location can be either local recording or remote recording
+    #[structopt(name = "LOCATION", parse(from_os_str))]
+    pub location: PathBuf,
 }

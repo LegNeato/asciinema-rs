@@ -37,6 +37,7 @@ use settings::install::InstallInfo;
 
 enum CommandResult {
     Authenticate(Result<Url, Error>),
+    Concatenate(Result<(), Error>),
     Record(Result<RecordLocation, Error>),
     Upload(Result<Url, Error>),
 }
@@ -53,6 +54,9 @@ fn main() {
         Action::Authenticate => CommandResult::Authenticate(commands::authenticate::go(
             &settings.authenticate.unwrap(),
             api,
+        )),
+        Action::Concatenate => CommandResult::Concatenate(commands::concatenate::go(
+            &settings.concatenate.unwrap()
         )),
         Action::Record => CommandResult::Record(commands::record::go(
             &settings.record.unwrap(),
@@ -81,6 +85,10 @@ fn main() {
                     url
                 ).as_str(),
             ),
+            Err(x) => handle_error(&x),
+        },
+        CommandResult::Concatenate(x) => match x {
+            Ok(()) => handle_output(""),
             Err(x) => handle_error(&x),
         },
         CommandResult::Record(x) => match x {
