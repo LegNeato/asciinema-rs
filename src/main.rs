@@ -55,9 +55,9 @@ fn main() {
             &settings.authenticate.unwrap(),
             api,
         )),
-        Action::Concatenate => CommandResult::Concatenate(commands::concatenate::go(
-            &settings.concatenate.unwrap()
-        )),
+        Action::Concatenate => {
+            CommandResult::Concatenate(commands::concatenate::go(&settings.concatenate.unwrap()))
+        }
         Action::Record => CommandResult::Record(commands::record::go(
             &settings.record.unwrap(),
             UploadBuilder::default()

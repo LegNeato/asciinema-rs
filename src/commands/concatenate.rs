@@ -31,14 +31,12 @@ pub fn go(settings: &ConcatenateSettings) -> Result<(), Error> {
         let target = l.to_str().unwrap();
         let mut response = reqwest::get(target)?;
         match response.status() {
-            StatusCode::Ok => {},
-            StatusCode::NotFound =>
-                Err(ConcatenateFailure::NotFound {
-                    res: target.to_string(),
+            StatusCode::Ok => {}
+            StatusCode::NotFound => Err(ConcatenateFailure::NotFound {
+                res: target.to_string(),
             })?,
-            s =>
-                Err(ConcatenateFailure::Others {
-                    stat: s.to_string(),
+            s => Err(ConcatenateFailure::Others {
+                stat: s.to_string(),
             })?,
         };
         copy(&mut response, &mut temp).unwrap();
