@@ -88,7 +88,7 @@ fn main() {
             Err(x) => handle_error(&x),
         },
         CommandResult::Concatenate(x) => match x {
-            Ok(()) => handle_output(""),
+            Ok(()) => 0,
             Err(x) => handle_error(&x),
         },
         CommandResult::Record(x) => match x {

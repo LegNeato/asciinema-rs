@@ -1,4 +1,4 @@
-use asciicast::Entry;
+use asciicast::{Entry, Header};
 use failure::Error;
 use reqwest::{self, StatusCode};
 use settings::ConcatenateSettings;
@@ -13,6 +13,8 @@ use tempfile::NamedTempFile;
 enum ConcatenateFailure {
     #[fail(display = "target resource not found: {}", res)]
     NotFound { res: String },
+    #[fail(display = "header not found")]
+    HeaderNotFound,
     #[fail(display = "something else happened (status: {})", stat)]
     Others { stat: String },
 }
@@ -53,6 +55,11 @@ pub fn go(settings: &ConcatenateSettings) -> Result<(), Error> {
 
     // Skip the first line, and maybe Header is needed later.
     let _len = reader.read_line(&mut line);
+    let res: Result<Header, serde_json::Error> = serde_json::from_str(line.as_str());
+    let _header = match res {
+        Ok(h) => h,
+        Err(_) => return Err(ConcatenateFailure::HeaderNotFound)?,
+    };
 
     for line in reader.lines() {
         let entry: Entry = serde_json::from_str(line.unwrap().as_str())?;
