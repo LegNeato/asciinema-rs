@@ -1,4 +1,4 @@
-## [Unreleased] - ReleaseDate
+## [0.2.0] - 2018-03-16
 
 ### Added
 
