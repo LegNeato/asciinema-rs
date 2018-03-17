@@ -76,7 +76,8 @@ contributors and is a great project for Rust beginners. **Please contribute!**
 
 #### Cat (`asciinema cat`)
 
-* [ ] [Implement `cat` command][issue.2]
+* [x] Support for local files
+* [x] Support for remote files
 
 ### License
 
