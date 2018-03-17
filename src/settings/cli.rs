@@ -7,6 +7,7 @@ pub enum CommandLine {
     /// Manage recordings on asciinema.org account
     #[structopt(name = "auth")]
     Authenticate(AuthenticateSettings),
+    /// Print full output of terminal session
     #[structopt(name = "cat")]
     Concatenate(ConcatenateSettings),
     /// Record terminal session
