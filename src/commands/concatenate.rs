@@ -63,7 +63,7 @@ pub fn go(settings: &ConcatenateSettings) -> Result<(), Error> {
 
     for line in reader.lines() {
         let entry: Entry = serde_json::from_str(line.unwrap().as_str())?;
-        handle.write(entry.event_data.as_bytes())?;
+        handle.write_all(entry.event_data.as_bytes())?;
     }
 
     Ok(())
