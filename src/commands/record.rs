@@ -30,6 +30,8 @@ use settings::RecordSettings;
 enum RecordFailure {
     #[fail(display = "unable to write to file: {}: file exists", path)]
     FileExists { path: String },
+    #[fail(display = "filename required when recording in raw mode")]
+    NoFileName,
     #[fail(display = "unable to write asciicast entry: {}", _0)]
     AsciicastEntryWrite(#[cause] std::io::Error),
 }
@@ -43,22 +45,29 @@ fn write_asciicast_event<W: ?Sized>(
     event_type: asciicast::EventType,
     since_start: Duration,
     data: &[u8],
+    raw: bool,
 ) -> Result<(), Error>
 where
     W: Write,
 {
-    // Generate asciicast entry.
-    let entry = asciicast::Entry {
-        time: get_elapsed_seconds(&since_start),
-        event_type,
-        event_data: str::from_utf8(data)?.to_string(),
-    };
+    if !raw {
+        // Generate asciicast entry.
+        let entry = asciicast::Entry {
+            time: get_elapsed_seconds(&since_start),
+            event_type,
+            event_data: str::from_utf8(data)?.to_string(),
+        };
 
-    // Serialize it to a JSON string.
-    let j = serde_json::to_string(&entry)?;
+        // Serialize it to a JSON string.
+        let j = serde_json::to_string(&entry)?;
 
-    // Write it out.
-    writeln!(writer, "{}", j).map_err(RecordFailure::AsciicastEntryWrite)?;
+        // Write it out.
+        writeln!(writer, "{}", j).map_err(RecordFailure::AsciicastEntryWrite)?;
+        return Ok(());
+    }
+    let raw_entry = str::from_utf8(data)?;
+    write!(writer, "{}", raw_entry).map_err(RecordFailure::AsciicastEntryWrite)?;
+
     Ok(())
 }
 
@@ -73,6 +82,7 @@ where
 {
     writer: LineWriter<Box<W>>,
     clock: Instant,
+    raw: bool,
 }
 
 impl<W: ?Sized> PtyHandler for Shell<W>
@@ -90,6 +100,7 @@ where
             asciicast::EventType::Output,
             self.clock.elapsed(),
             output,
+            self.raw,
         ).unwrap();
     }
 
@@ -120,7 +131,12 @@ fn validate_output_path(settings: &RecordSettings) -> Result<(), Error> {
                 path: x.as_path().to_string_lossy().into_owned(),
             })?
         }
-        None => Ok(()),
+        None => {
+            if settings.raw {
+                return Err(RecordFailure::NoFileName)?
+            }
+            Ok(())
+        }
     }
 }
 
@@ -161,9 +177,11 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
         command: None,
         title: settings.title.clone(),
     };
-    let json_header = serde_json::to_string(&header).context("Cannot convert header to JSON")?;
+    if !settings.raw {
+        let json_header = serde_json::to_string(&header).context("Cannot convert header to JSON")?;
 
-    writeln!(writer, "{}", json_header).context("Cannot write header")?;
+        writeln!(writer, "{}", json_header).context("Cannot write header")?;
+    }
 
     let child = tty::Fork::from_ptmx()?;
     child.exec(env::var("SHELL").unwrap_or_else(|_| "sh".to_string()))?;
@@ -183,6 +201,7 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
     let shell = Shell {
         writer,
         clock: Instant::now(),
+        raw: settings.raw,
     };
     child.proxy(shell)?;
     child.wait()?;
@@ -251,7 +270,7 @@ mod tests {
         let mut writer = LineWriter::new(Box::new(c));
 
         // Serialize and write the event.
-        write_asciicast_event(&mut writer, event_type, duration, data.as_bytes()).unwrap();
+        write_asciicast_event(&mut writer, event_type, duration, data.as_bytes(), false).unwrap();
 
         // First we get our Box from the LineWriter.
         let box_from_writer: Box<Any> = writer.into_inner().unwrap();
