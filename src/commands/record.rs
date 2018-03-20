@@ -133,7 +133,7 @@ fn validate_output_path(settings: &RecordSettings) -> Result<(), Error> {
         }
         None => {
             if settings.raw {
-                return Err(RecordFailure::NoFileName)?
+                return Err(RecordFailure::NoFileName)?;
             }
             Ok(())
         }
