@@ -2,7 +2,11 @@
 
 ### Added
 
-* Entire word command aliases are now supported--`record` for `rec`, `authenticate` for `auth`, `concatenate` for `cat` ([#12](https://github.com/LegNeato/asciinema-rs/issues/12)).
+* Additional command aliases are now supported, allowing brevity or verbosity at your discretion. ([#12](https://github.com/LegNeato/asciinema-rs/issues/12)).
+  * `auth`: aliased to `authenticate` and `a`
+  * `cat`: aliased to `concatenate` and `c`
+  * `rec`: aliased to `record` and `r`
+  * `upload`: aliased to `u`
 
 ## [[0.2.0] - 2018-03-16](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.2.0)
 
