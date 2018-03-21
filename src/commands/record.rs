@@ -30,10 +30,10 @@ use settings::RecordSettings;
 enum RecordFailure {
     #[fail(display = "unable to write to file: {}: file exists", path)]
     FileExists { path: String },
-    #[fail(display = "filename required when recording in raw mode")]
-    NoFileName,
     #[fail(display = "unable to write asciicast entry: {}", _0)]
     AsciicastEntryWrite(#[cause] std::io::Error),
+    #[fail(display = "unable to write raw output: {}", _0)]
+    RawOutputWrite(#[cause] std::io::Error),
 }
 
 fn get_elapsed_seconds(duration: &Duration) -> f64 {
@@ -45,29 +45,31 @@ fn write_asciicast_event<W: ?Sized>(
     event_type: asciicast::EventType,
     since_start: Duration,
     data: &[u8],
-    raw: bool,
 ) -> Result<(), Error>
 where
     W: Write,
 {
-    if !raw {
-        // Generate asciicast entry.
-        let entry = asciicast::Entry {
-            time: get_elapsed_seconds(&since_start),
-            event_type,
-            event_data: str::from_utf8(data)?.to_string(),
-        };
+    // Generate asciicast entry.
+    let entry = asciicast::Entry {
+        time: get_elapsed_seconds(&since_start),
+        event_type,
+        event_data: str::from_utf8(data)?.to_string(),
+    };
 
-        // Serialize it to a JSON string.
-        let j = serde_json::to_string(&entry)?;
+    // Serialize it to a JSON string.
+    let j = serde_json::to_string(&entry)?;
 
-        // Write it out.
-        writeln!(writer, "{}", j).map_err(RecordFailure::AsciicastEntryWrite)?;
-        return Ok(());
-    }
-    let raw_entry = str::from_utf8(data)?;
-    write!(writer, "{}", raw_entry).map_err(RecordFailure::AsciicastEntryWrite)?;
+    // Write it out.
+    writeln!(writer, "{}", j).map_err(RecordFailure::AsciicastEntryWrite)?;
+    Ok(())
+}
 
+fn write_raw_output<W: ?Sized>(writer: &mut LineWriter<Box<W>>, data: &[u8]) -> Result<(), Error>
+where
+    W: Write,
+{
+    let raw_out = str::from_utf8(data)?;
+    write!(writer, "{}", raw_out).map_err(RecordFailure::RawOutputWrite)?;
     Ok(())
 }
 
@@ -95,13 +97,16 @@ where
     }
 
     fn output(&mut self, output: &[u8]) {
-        write_asciicast_event(
-            self.writer.by_ref(),
-            asciicast::EventType::Output,
-            self.clock.elapsed(),
-            output,
-            self.raw,
-        ).unwrap();
+        if self.raw {
+            write_raw_output(self.writer.by_ref(), output).unwrap();
+        } else {
+            write_asciicast_event(
+                self.writer.by_ref(),
+                asciicast::EventType::Output,
+                self.clock.elapsed(),
+                output,
+            ).unwrap();
+        }
     }
 
     fn resize(&mut self, _winsize: &winsize::Winsize) {
@@ -131,12 +136,7 @@ fn validate_output_path(settings: &RecordSettings) -> Result<(), Error> {
                 path: x.as_path().to_string_lossy().into_owned(),
             })?
         }
-        None => {
-            if settings.raw {
-                return Err(RecordFailure::NoFileName)?;
-            }
-            Ok(())
-        }
+        None => Ok(()),
     }
 }
 
@@ -270,7 +270,7 @@ mod tests {
         let mut writer = LineWriter::new(Box::new(c));
 
         // Serialize and write the event.
-        write_asciicast_event(&mut writer, event_type, duration, data.as_bytes(), false).unwrap();
+        write_asciicast_event(&mut writer, event_type, duration, data.as_bytes()).unwrap();
 
         // First we get our Box from the LineWriter.
         let box_from_writer: Box<Any> = writer.into_inner().unwrap();
@@ -280,6 +280,20 @@ mod tests {
         let buff = c.into_inner();
 
         // The Vec contains what was written...return it as a String.
+        String::from_utf8(buff).unwrap()
+    }
+
+    fn write_mock_raw_output(data: String) -> String {
+        let c = Cursor::new(vec![0; 11]);
+        let mut writer = LineWriter::new(Box::new(c));
+
+        // Write the raw output.
+        write_raw_output(&mut writer, data.as_bytes()).unwrap();
+
+        let box_from_writer: Box<Any> = writer.into_inner().unwrap();
+        let c = box_from_writer.downcast::<Cursor<Vec<u8>>>().unwrap();
+        let buff = c.into_inner();
+
         String::from_utf8(buff).unwrap()
     }
 
@@ -305,6 +319,12 @@ mod tests {
             "Hello world".to_string(),
         );
         assert_eq!(result, "[123.000000456,\"o\",\"Hello world\"]\n");
+    }
+
+    #[test]
+    fn test_writing_raw_output() {
+        let result = write_mock_raw_output("Hello world".to_string());
+        assert_eq!(result, "Hello world");
     }
 
     #[test]
