@@ -98,7 +98,7 @@ pub struct RecordSettings {
     #[structopt(long = "append")]
     pub append: bool,
     /// Save only raw stdout output
-    #[structopt(long = "raw")]
+    #[structopt(long = "raw", raw(requires = r#""FILE""#))]
     pub raw: bool,
     /// Filename/path to save the recording to
     #[structopt(name = "FILE", parse(from_os_str))]

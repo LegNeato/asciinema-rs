@@ -32,6 +32,8 @@ enum RecordFailure {
     FileExists { path: String },
     #[fail(display = "unable to write asciicast entry: {}", _0)]
     AsciicastEntryWrite(#[cause] std::io::Error),
+    #[fail(display = "unable to write raw output: {}", _0)]
+    RawOutputWrite(#[cause] std::io::Error),
 }
 
 fn get_elapsed_seconds(duration: &Duration) -> f64 {
@@ -62,6 +64,15 @@ where
     Ok(())
 }
 
+fn write_raw_output<W: ?Sized>(writer: &mut LineWriter<Box<W>>, data: &[u8]) -> Result<(), Error>
+where
+    W: Write,
+{
+    let raw_out = str::from_utf8(data)?;
+    write!(writer, "{}", raw_out).map_err(RecordFailure::RawOutputWrite)?;
+    Ok(())
+}
+
 pub enum RecordLocation {
     Local(PathBuf),
     Remote(Url),
@@ -73,6 +84,7 @@ where
 {
     writer: LineWriter<Box<W>>,
     clock: Instant,
+    raw: bool,
 }
 
 impl<W: ?Sized> PtyHandler for Shell<W>
@@ -85,12 +97,16 @@ where
     }
 
     fn output(&mut self, output: &[u8]) {
-        write_asciicast_event(
-            self.writer.by_ref(),
-            asciicast::EventType::Output,
-            self.clock.elapsed(),
-            output,
-        ).unwrap();
+        if self.raw {
+            write_raw_output(self.writer.by_ref(), output).unwrap();
+        } else {
+            write_asciicast_event(
+                self.writer.by_ref(),
+                asciicast::EventType::Output,
+                self.clock.elapsed(),
+                output,
+            ).unwrap();
+        }
     }
 
     fn resize(&mut self, _winsize: &winsize::Winsize) {
@@ -161,9 +177,11 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
         command: None,
         title: settings.title.clone(),
     };
-    let json_header = serde_json::to_string(&header).context("Cannot convert header to JSON")?;
+    if !settings.raw {
+        let json_header = serde_json::to_string(&header).context("Cannot convert header to JSON")?;
 
-    writeln!(writer, "{}", json_header).context("Cannot write header")?;
+        writeln!(writer, "{}", json_header).context("Cannot write header")?;
+    }
 
     let child = tty::Fork::from_ptmx()?;
     child.exec(env::var("SHELL").unwrap_or_else(|_| "sh".to_string()))?;
@@ -183,6 +201,7 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
     let shell = Shell {
         writer,
         clock: Instant::now(),
+        raw: settings.raw,
     };
     child.proxy(shell)?;
     child.wait()?;
@@ -264,6 +283,20 @@ mod tests {
         String::from_utf8(buff).unwrap()
     }
 
+    fn write_mock_raw_output(data: String) -> String {
+        let c = Cursor::new(vec![0; 11]);
+        let mut writer = LineWriter::new(Box::new(c));
+
+        // Write the raw output.
+        write_raw_output(&mut writer, data.as_bytes()).unwrap();
+
+        let box_from_writer: Box<Any> = writer.into_inner().unwrap();
+        let c = box_from_writer.downcast::<Cursor<Vec<u8>>>().unwrap();
+        let buff = c.into_inner();
+
+        String::from_utf8(buff).unwrap()
+    }
+
     #[test]
     fn test_elapsed_whole_seconds() {
         let d = Duration::new(5, 0);
@@ -286,6 +319,12 @@ mod tests {
             "Hello world".to_string(),
         );
         assert_eq!(result, "[123.000000456,\"o\",\"Hello world\"]\n");
+    }
+
+    #[test]
+    fn test_writing_raw_output() {
+        let result = write_mock_raw_output("Hello world".to_string());
+        assert_eq!(result, "Hello world");
     }
 
     #[test]
