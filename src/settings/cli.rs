@@ -20,6 +20,6 @@ pub enum CommandLine {
     Record(RecordSettings),
     /// Upload locally saved terminal session to asciinema.org
     #[structopt(name = "upload")]
-    #[structopt(raw(aliases = r#"&["u"]"#))]
+    #[structopt(raw(aliases = r#"&["u", "up"]"#))]
     Upload(UploadSettings),
 }

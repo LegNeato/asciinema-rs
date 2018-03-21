@@ -6,7 +6,7 @@
   * `auth`: aliased to `authenticate` and `a`
   * `cat`: aliased to `concatenate` and `c`
   * `rec`: aliased to `record` and `r`
-  * `upload`: aliased to `u`
+  * `upload`: aliased to `up` and `u`
 
 ## [[0.2.0] - 2018-03-16](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.2.0)
 
