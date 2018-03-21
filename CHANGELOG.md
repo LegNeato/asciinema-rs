@@ -1,10 +1,10 @@
-## [Unreleased] - ReleaseDate
+## [[Unreleased] - ReleaseDate](https://github.com/LegNeato/asciinema-rs/releases/tag/vUnreleased)
 
 ### Added
 
 * Entire word command aliases are now supported--`record` for `rec`, `authenticate` for `auth`, `concatenate` for `cat` ([#12](https://github.com/LegNeato/asciinema-rs/issues/12)).
 
-## [0.2.0] - 2018-03-16
+## [[0.2.0] - 2018-03-16](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.2.0)
 
 ### Added
 
@@ -14,6 +14,6 @@
 
 * The `url` value set in the `[api]` section of the [config](https://asciinema.org/docs/config) no longer needs a trailing slash to behave correctly.
 
-## [0.1.0] - 2018-03-12
+## [[0.1.0] - 2018-03-12](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.1.0)
 
 * Initial release
