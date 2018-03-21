@@ -52,7 +52,7 @@ contributors and is a great project for Rust beginners. **Please contribute!**
 * [x] Save to local file
 * [ ] [Prompt for where to save after recording][issue.5]
 * [x] Append to output via `--append`
-* [ ] [Save only raw stdout output via `--raw`][issue.6]
+* [x] Save only raw stdout output via `--raw`
 * [x] `--overwrite`
 * [ ] [Run a command via `--command`][issue.3]
 * [ ] [By default capture `SHELL` and `TERM` environment variables][issue.7]
