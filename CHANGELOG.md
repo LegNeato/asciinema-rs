@@ -16,7 +16,7 @@
 
   As mentioned in the [official client's usage](https://asciinema.org/docs/usage), this can be used by your shell's config file (`.bashrc`, `.zshrc`) to alter the prompt or play a sound when the shell is being recorded.
 
-* `SHELL` and `TERM` environment variables are captured by default when recording.
+* `SHELL` and `TERM` environment variables are captured by default when recording ([#7](https://github.com/LegNeato/asciinema-rs/issues/7)).
 
 ### Fixed
 
