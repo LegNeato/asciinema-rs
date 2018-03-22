@@ -35,7 +35,7 @@ tempfile = "2.2.0"
 [package.metadata.release]
 dev-version-ext = "pre"
 pre-release-replacements = [
-  { file="CHANGELOG.md", search="## master", replace="## master\n\n## [[{{version}}] - {{date}}](https://github.com/LegNeato/asciinema-rs/releases/tag/v{{version}})"},
+  { file="CHANGELOG.md", search="## master", replace="## master\n\n* No changes yet\n\n## [[{{version}}] - {{date}}](https://github.com/LegNeato/asciinema-rs/releases/tag/v{{version}})"},
 ]
 pre-release-commit-message = "Release {{version}}"
 pro-release-commit-message = "Bump version to {{version}}"
