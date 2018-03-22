@@ -72,7 +72,16 @@ contributors and is a great project for Rust beginners. **Please contribute!**
 
 #### Play (`asciinema play`)
 
-* [ ] [Implement `play` command][issue.1]
+* [ ] [Play from local file][issue.22]
+* [ ] [Play from remote url][issue.23]
+* [ ] [Play from asciicast page url][issue.24]
+* [ ] [Play from `stdin`][issue.25]
+* [ ] [Play from `ipfs`][issue.26]
+* [ ] [Pause playback via `SPACE`][issue.27]
+* [ ] [Step through a frame via `.`][issue.28]
+* [ ] [Exit playback via `CTRL+C`][issue.29]
+* [ ] [Limit replayed terminal inactivity via `--idle-time-limit`][issue.30]
+* [ ] [Adjust playback speed via `--speed`][issue.31]
 
 #### Cat (`asciinema cat`)
 
@@ -101,3 +110,13 @@ Note that the reference [python implementation][original] is licensed under [GPL
 [issue.8]: https://github.com/LegNeato/asciinema-rs/issues/8
 [issue.9]: https://github.com/LegNeato/asciinema-rs/issues/9
 [issue.10]: https://github.com/LegNeato/asciinema-rs/issues/10
+[issue.22]: https://github.com/LegNeato/asciinema-rs/issues/22
+[issue.23]: https://github.com/LegNeato/asciinema-rs/issues/23
+[issue.24]: https://github.com/LegNeato/asciinema-rs/issues/24
+[issue.25]: https://github.com/LegNeato/asciinema-rs/issues/25
+[issue.26]: https://github.com/LegNeato/asciinema-rs/issues/26
+[issue.27]: https://github.com/LegNeato/asciinema-rs/issues/27
+[issue.28]: https://github.com/LegNeato/asciinema-rs/issues/28
+[issue.29]: https://github.com/LegNeato/asciinema-rs/issues/29
+[issue.30]: https://github.com/LegNeato/asciinema-rs/issues/30
+[issue.31]: https://github.com/LegNeato/asciinema-rs/issues/31
