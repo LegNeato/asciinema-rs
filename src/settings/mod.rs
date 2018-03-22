@@ -15,6 +15,7 @@ use self::cli::CommandLine;
 pub enum Action {
     Authenticate,
     Concatenate,
+    Play,
     Record,
     Upload,
 }
@@ -24,6 +25,7 @@ pub struct Settings {
     pub api_url: Url,
     pub authenticate: Option<AuthenticateSettings>,
     pub concatenate: Option<ConcatenateSettings>,
+    pub play: Option<PlaySettings>,
     pub record: Option<RecordSettings>,
     pub upload: Option<UploadSettings>,
 }
@@ -47,6 +49,7 @@ impl Settings {
                 api_url,
                 authenticate: Some(AuthenticateSettings { ..x }),
                 concatenate: None,
+                play: None,
                 record: None,
                 upload: None,
             }),
@@ -55,6 +58,16 @@ impl Settings {
                 api_url,
                 authenticate: None,
                 concatenate: Some(ConcatenateSettings { ..x }),
+                play: None,
+                record: None,
+                upload: None,
+            }),
+            CommandLine::Play { 0: x } => Ok(Settings {
+                action: Action::Play,
+                api_url,
+                authenticate: None,
+                concatenate: None,
+                play: Some(PlaySettings { ..x }),
                 record: None,
                 upload: None,
             }),
@@ -63,6 +76,7 @@ impl Settings {
                 api_url,
                 authenticate: None,
                 concatenate: None,
+                play: None,
                 record: Some(RecordSettings { ..x }),
                 upload: None,
             }),
@@ -71,11 +85,25 @@ impl Settings {
                 api_url,
                 authenticate: None,
                 concatenate: None,
+                play: None,
                 record: None,
                 upload: Some(UploadSettings { ..x }),
             }),
         }
     }
+}
+
+#[derive(StructOpt, Clone, Debug, Deserialize)]
+pub struct PlaySettings {
+    /// Limit replayed terminal inactivity to max seconds
+    #[structopt(short = "i", long = "idle-time-limit")]
+    pub idle_time_limit: Option<f64>,
+    /// Playback speed
+    #[structopt(short = "s", long = "speed")]
+    pub speed: Option<f64>,
+    /// Location can be either local recording or remote recording
+    #[structopt(name = "LOCATION", parse(from_os_str))]
+    pub location: PathBuf,
 }
 
 #[derive(StructOpt, Clone, Debug, Deserialize)]

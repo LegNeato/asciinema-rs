@@ -1,4 +1,5 @@
-use super::{AuthenticateSettings, ConcatenateSettings, RecordSettings, UploadSettings};
+use super::{AuthenticateSettings, ConcatenateSettings, PlaySettings, RecordSettings,
+            UploadSettings};
 use structopt::clap::AppSettings;
 
 #[derive(StructOpt, Debug)]
@@ -14,6 +15,10 @@ pub enum CommandLine {
     #[structopt(name = "cat")]
     #[structopt(raw(aliases = r#"&["c", "concatenate"]"#))]
     Concatenate(ConcatenateSettings),
+    /// Replay recorded asciicast in a terminal
+    #[structopt(name = "play")]
+    #[structopt(raw(aliases = r#"&["p", "play"]"#))]
+    Play(PlaySettings),
     /// Record terminal session
     #[structopt(name = "rec")]
     #[structopt(raw(aliases = r#"&["r", "record"]"#))]

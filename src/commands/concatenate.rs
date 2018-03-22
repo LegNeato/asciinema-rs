@@ -1,30 +1,30 @@
 use asciicast::{Entry, Header};
 use failure::Error;
 use reqwest::{self, StatusCode};
+use serde_json;
 use settings::ConcatenateSettings;
 use std::fs::File;
 use std::io::copy;
 use std::io::prelude::*;
 use std::io::{self, BufReader, Write};
-use serde_json;
+use std::path::PathBuf;
 use tempfile::NamedTempFile;
 
 #[derive(Debug, Fail)]
 enum ConcatenateFailure {
-    #[fail(display = "target resource not found: {}", res)]
-    NotFound { res: String },
     #[fail(display = "header not found")]
     HeaderNotFound,
+}
+
+#[derive(Debug, Fail)]
+enum ReqwestFailure {
+    #[fail(display = "target resource not found: {}", res)]
+    NotFound { res: String },
     #[fail(display = "something else happened (status: {})", stat)]
     Others { stat: String },
 }
 
-pub fn go(settings: &ConcatenateSettings) -> Result<(), Error> {
-    let location = settings.location.clone();
-
-    let mut temp: NamedTempFile = NamedTempFile::new()?;
-
-    // This looks silly.
+pub fn get_file(location: PathBuf, temp: &mut NamedTempFile) -> Result<File, Error> {
     let file: File;
 
     let if_url = location.to_str().unwrap().starts_with("http");
@@ -34,18 +34,27 @@ pub fn go(settings: &ConcatenateSettings) -> Result<(), Error> {
         let mut response = reqwest::get(target)?;
         match response.status() {
             StatusCode::Ok => {}
-            StatusCode::NotFound => Err(ConcatenateFailure::NotFound {
+            StatusCode::NotFound => Err(ReqwestFailure::NotFound {
                 res: target.to_string(),
             })?,
-            s => Err(ConcatenateFailure::Others {
+            s => Err(ReqwestFailure::Others {
                 stat: s.to_string(),
             })?,
         };
-        copy(&mut response, &mut temp).unwrap();
+        copy(&mut response, temp).unwrap();
         file = temp.reopen()?;
     } else {
         file = File::open(location)?;
     }
+    Ok(file)
+}
+
+pub fn go(settings: &ConcatenateSettings) -> Result<(), Error> {
+    let location = settings.location.clone();
+
+    let mut temp: NamedTempFile = NamedTempFile::new()?;
+
+    let file = get_file(location, &mut temp)?;
 
     let stdout = io::stdout();
     let mut handle = stdout.lock();

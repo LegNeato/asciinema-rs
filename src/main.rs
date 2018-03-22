@@ -38,6 +38,7 @@ use settings::install::InstallInfo;
 enum CommandResult {
     Authenticate(Result<Url, Error>),
     Concatenate(Result<(), Error>),
+    Play(Result<(), Error>),
     Record(Result<RecordLocation, Error>),
     Upload(Result<Url, Error>),
 }
@@ -58,6 +59,7 @@ fn main() {
         Action::Concatenate => {
             CommandResult::Concatenate(commands::concatenate::go(&settings.concatenate.unwrap()))
         }
+        Action::Play => CommandResult::Play(commands::play::go(&settings.play.unwrap())),
         Action::Record => CommandResult::Record(commands::record::go(
             &settings.record.unwrap(),
             UploadBuilder::default()
@@ -88,6 +90,10 @@ fn main() {
             Err(x) => handle_error(&x),
         },
         CommandResult::Concatenate(x) => match x {
+            Ok(()) => 0,
+            Err(x) => handle_error(&x),
+        },
+        CommandResult::Play(x) => match x {
             Ok(()) => 0,
             Err(x) => handle_error(&x),
         },
