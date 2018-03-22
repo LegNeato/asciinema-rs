@@ -1,5 +1,7 @@
 ## master
 
+## [[0.3.0] - 2018-03-21](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.3.0)
+
 ### Added
 
 * Additional command aliases are now supported, allowing brevity or verbosity at your discretion ([#12](https://github.com/LegNeato/asciinema-rs/issues/12)).
