@@ -1,4 +1,4 @@
-## [[Unreleased] - ReleaseDate](https://github.com/LegNeato/asciinema-rs/releases/tag/vUnreleased)
+## master
 
 ### Added
 
