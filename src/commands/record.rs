@@ -41,6 +41,16 @@ fn get_elapsed_seconds(duration: &Duration) -> f64 {
     duration.as_secs() as f64 + (0.000_000_001 * f64::from(duration.subsec_nanos()))
 }
 
+fn capture_environment_vars(keys: Vec<&str>) -> HashMap<String, String> {
+    let mut h = HashMap::new();
+    for key in keys {
+        if let Ok(value) = env::var(&key) {
+            h.insert(key.to_string(), value);
+        }
+    }
+    h
+}
+
 fn get_environment_for_child<I>(parent_env: I) -> HashMap<String, String>
 where
     I: Iterator<Item = (String, String)>,
@@ -179,20 +189,21 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
 
     let mut writer: LineWriter<Box<Write>> = LineWriter::new(Box::new(tmp_handle));
 
-    // TODO: Now that we always write to a tempfile and we don't support streaming,
-    // perhaps write the header at the end so we can fill out `duration`?
-    let header = asciicast::Header {
-        version: 2,
-        width: u32::from(cols),
-        height: u32::from(rows),
-        timestamp: Some(Utc::now()),
-        duration: None,
-        idle_time_limit: settings.idle_time_limit,
-        // TODO: Command support.
-        command: None,
-        title: settings.title.clone(),
-    };
     if !settings.raw {
+        // TODO: Now that we always write to a tempfile and we don't support streaming,
+        // perhaps write the header at the end so we can fill out `duration`?
+        let header = asciicast::Header {
+            version: 2,
+            width: u32::from(cols),
+            height: u32::from(rows),
+            timestamp: Some(Utc::now()),
+            duration: None,
+            idle_time_limit: settings.idle_time_limit,
+            // TODO: Command support.
+            command: None,
+            title: settings.title.clone(),
+            env: Some(capture_environment_vars(vec!["SHELL", "TERM"])),
+        };
         let json_header = serde_json::to_string(&header).context("Cannot convert header to JSON")?;
         writeln!(writer, "{}", json_header).context("Cannot write header")?;
     }
@@ -407,6 +418,20 @@ mod tests {
             FileBehavior::Append,
         ));
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_capturing_env_for_header() {
+        env::set_var("THIS_IS_A_TEST_1", "1");
+        env::set_var("THIS_IS_A_TEST_2", "2");
+        let result = capture_environment_vars(vec![
+            "THIS_IS_A_TEST_1",
+            "THIS_IS_A_TEST_2",
+            "THIS_IS_A_TEST_3",
+        ]);
+        assert_eq!(result.get("THIS_IS_A_TEST_1"), Some(&"1".to_string()));
+        assert_eq!(result.get("THIS_IS_A_TEST_2"), Some(&"2".to_string()));
+        assert_eq!(result.get("THIS_IS_A_TEST_3"), None);
     }
 
     #[test]
