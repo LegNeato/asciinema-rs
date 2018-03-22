@@ -37,7 +37,7 @@ enum RecordFailure {
     RawOutputWrite(#[cause] std::io::Error),
 }
 
-fn get_elapsed_seconds(duration: &Duration) -> f64 {
+pub fn get_elapsed_seconds(duration: &Duration) -> f64 {
     duration.as_secs() as f64 + (0.000_000_001 * f64::from(duration.subsec_nanos()))
 }
 
