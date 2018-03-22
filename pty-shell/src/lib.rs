@@ -15,6 +15,7 @@ pub use self::terminal::*;
 use self::winsize::Winsize;
 use std::{fmt, io, result, thread};
 use std::io::{Read, Write};
+use std::collections::HashMap;
 
 pub mod error;
 pub mod terminal;
@@ -34,6 +35,11 @@ pub trait PtyHandler {
 
 pub trait PtyShell {
     fn exec<S: AsRef<str>>(&self, shell: S) -> Result<()>;
+    fn exec_with_env<S: AsRef<str>>(
+        &self,
+        shell: S,
+        env: Option<HashMap<String, String>>,
+    ) -> Result<()>;
     fn proxy<H: PtyHandler + 'static>(&self, handler: H) -> Result<()>;
 }
 
@@ -41,6 +47,18 @@ impl PtyShell for tty::Fork {
     fn exec<S: AsRef<str>>(&self, shell: S) -> Result<()> {
         if self.is_child().is_ok() {
             command::exec(shell);
+        }
+
+        Ok(())
+    }
+
+    fn exec_with_env<S: AsRef<str>>(
+        &self,
+        shell: S,
+        env: Option<HashMap<String, String>>,
+    ) -> Result<()> {
+        if self.is_child().is_ok() {
+            command::exec_with_env(shell, env);
         }
 
         Ok(())

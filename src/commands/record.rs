@@ -10,6 +10,7 @@ extern crate serde_json;
 use std::io::prelude::*;
 use chrono::Utc;
 use std::env;
+use std::collections::HashMap;
 use std::str;
 use uploader::UploadBuilder;
 use std::io::LineWriter;
@@ -38,6 +39,20 @@ enum RecordFailure {
 
 fn get_elapsed_seconds(duration: &Duration) -> f64 {
     duration.as_secs() as f64 + (0.000_000_001 * f64::from(duration.subsec_nanos()))
+}
+
+fn get_environment_for_child<I>(parent_env: I) -> HashMap<String, String>
+where
+    I: Iterator<Item = (String, String)>,
+{
+    // Duplicate the parent environment.
+    let mut child_env = HashMap::new();
+    for (key, value) in parent_env {
+        child_env.insert(key, value);
+    }
+    // Add `ASCIINEMA_REC` env variable.
+    child_env.insert("ASCIINEMA_REC".to_string(), "1".to_string());
+    child_env
 }
 
 fn write_asciicast_event<W: ?Sized>(
@@ -179,12 +194,8 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
     };
     if !settings.raw {
         let json_header = serde_json::to_string(&header).context("Cannot convert header to JSON")?;
-
         writeln!(writer, "{}", json_header).context("Cannot write header")?;
     }
-
-    let child = tty::Fork::from_ptmx()?;
-    child.exec(env::var("SHELL").unwrap_or_else(|_| "sh".to_string()))?;
 
     // Write out the recording banner for interactive sessions.
     let mut stdout = StandardStream::stdout(ColorChoice::Always);
@@ -198,12 +209,20 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
     stdout.reset()?;
     stdout.flush()?;
 
+    let child = tty::Fork::from_ptmx()?;
     let shell = Shell {
         writer,
         clock: Instant::now(),
         raw: settings.raw,
     };
     child.proxy(shell)?;
+
+    let child_env = get_environment_for_child(env::vars());
+
+    child.exec_with_env(
+        env::var("SHELL").unwrap_or_else(|_| "sh".to_string()),
+        Some(child_env),
+    )?;
     child.wait()?;
 
     // Return where recorded asciicast can be found.
@@ -388,5 +407,22 @@ mod tests {
             FileBehavior::Append,
         ));
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_env_copies_parent() {
+        let mut e = HashMap::new();
+        e.insert("FOO".to_string(), "test".to_string());
+        e.insert("BAR".to_string(), "1".to_string());
+        let result = get_environment_for_child(e.iter().map(|(a, b)| (a.clone(), b.clone())));
+        assert_eq!(result.get("FOO"), Some(&"test".to_string()));
+        assert_eq!(result.get("BAR"), Some(&"1".to_string()));
+    }
+
+    #[test]
+    fn test_env_sets_asciinema_rec() {
+        let e: HashMap<String, String> = HashMap::new();
+        let result = get_environment_for_child(e.iter().map(|(a, b)| (a.clone(), b.clone())));
+        assert_eq!(result.get("ASCIINEMA_REC"), Some(&"1".to_string()));
     }
 }
