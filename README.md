@@ -55,7 +55,7 @@ contributors and is a great project for Rust beginners. **Please contribute!**
 * [x] Save only raw stdout output via `--raw`
 * [x] `--overwrite`
 * [ ] [Run a command via `--command`][issue.3]
-* [ ] [By default capture `SHELL` and `TERM` environment variables][issue.7]
+* [x] By default capture `SHELL` and `TERM` environment variables
 * [ ] [Specify environment variables to capture via `--env`][issue.8]
 * [x] Set a title via `--title`
 * [x] Set an idle limit via `--idle-time-limit`
