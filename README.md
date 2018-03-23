@@ -81,7 +81,7 @@ contributors and is a great project for Rust beginners. **Please contribute!**
 * [ ] [Step through a frame via `.`][issue.28]
 * [ ] [Exit playback via `CTRL+C`][issue.29]
 * [ ] [Limit replayed terminal inactivity via `--idle-time-limit`][issue.30]
-* [ ] [Adjust playback speed via `--speed`][issue.31]
+* [x] Adjust playback speed via `--speed`
 
 #### Cat (`asciinema cat`)
 

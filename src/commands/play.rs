@@ -45,10 +45,15 @@ pub fn go(settings: &PlaySettings) -> Result<(), Error> {
 
     let base = Instant::now();
 
+    let speed_factor = match settings.speed {
+        Some(s) => 1.0 / s,
+        None => 1.0,
+    };
+
     for line in reader.lines() {
         let entry: Entry = serde_json::from_str(line.unwrap().as_str())?;
         loop {
-            if entry.time <= get_elapsed_seconds(&base.elapsed()) {
+            if entry.time * speed_factor <= get_elapsed_seconds(&base.elapsed()) {
                 handle.write_all(entry.event_data.as_bytes())?;
                 handle.flush()?;
                 break;

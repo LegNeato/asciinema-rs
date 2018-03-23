@@ -7,6 +7,10 @@
   Note: support for interactive features such as pausing playback will be added
   in the future.
 
+* Playback speed can be adjusted via `asciinema play --speed`. A value of `2`
+  would make playback twice as fast as realtime. A value of `0.5` would make
+  playback half as fast as realtime.
+
 * The cursor can be hidden during playback via `asciinema play --hide-cursor`.
 
 ### Fixed
