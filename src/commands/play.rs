@@ -8,6 +8,7 @@ use std::io::prelude::*;
 use std::io::{self, BufReader, Write};
 use std::time::Instant;
 use tempfile::NamedTempFile;
+use termion;
 
 #[derive(Debug, Fail)]
 enum PlayFailure {
@@ -24,6 +25,12 @@ pub fn go(settings: &PlaySettings) -> Result<(), Error> {
 
     let stdout = io::stdout();
     let mut handle = stdout.lock();
+
+    // Hide the cursor if requested to do so.
+    if settings.hide_cursor {
+        handle.write_all(format!("{}", termion::cursor::Hide).as_bytes())?;
+        handle.flush()?;
+    }
 
     let mut reader = BufReader::new(file);
     let mut line = String::new();
@@ -47,6 +54,12 @@ pub fn go(settings: &PlaySettings) -> Result<(), Error> {
                 break;
             }
         }
+    }
+
+    // Restore the cursor if it was previously hidden.
+    if settings.hide_cursor {
+        handle.write_all(format!("{}", termion::cursor::Show).as_bytes())?;
+        handle.flush()?;
     }
 
     Ok(())

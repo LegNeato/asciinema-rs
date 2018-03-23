@@ -101,6 +101,9 @@ pub struct PlaySettings {
     /// Playback speed
     #[structopt(short = "s", long = "speed")]
     pub speed: Option<f64>,
+    #[structopt(long = "hide-cursor")]
+    /// Hide the cursor during playback
+    pub hide_cursor: bool,
     /// Location can be either local recording or remote recording
     #[structopt(name = "LOCATION", parse(from_os_str))]
     pub location: PathBuf,
