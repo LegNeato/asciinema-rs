@@ -221,6 +221,7 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
     stdout.flush()?;
 
     let child = tty::Fork::from_ptmx()?;
+    restore_termios();
     let shell = Shell {
         writer,
         clock: Instant::now(),
