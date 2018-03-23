@@ -1,5 +1,21 @@
 ## master
 
+### Added
+
+* The `play` command is now supported for local and remote files ([#32](https://github.com/LegNeato/asciinema-rs/pull/32)).
+
+  Note: support for interactive features such as pausing playback will be added
+  in the future.
+
+* The cursor can be hidden during playback via `asciinema play --hide-cursor`.
+
+### Fixed
+
+* The terminal's width and height is correctly determined when recording during
+  another recording.
+
+  Previously the interior's recording failed to detect the terminal size and instead set the width and height to zero.
+
 ## [[0.3.0] - 2018-03-21](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.3.0)
 
 ### Added
