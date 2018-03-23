@@ -72,8 +72,8 @@ contributors and is a great project for Rust beginners. **Please contribute!**
 
 #### Play (`asciinema play`)
 
-* [ ] [Play from local file][issue.22]
-* [ ] [Play from remote url][issue.23]
+* [x] Play from local file
+* [x] Play from remote url
 * [ ] [Play from asciicast page url][issue.24]
 * [ ] [Play from `stdin`][issue.25]
 * [ ] [Play from `ipfs`][issue.26]
