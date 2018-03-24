@@ -26,6 +26,8 @@ mod commands;
 mod settings;
 mod uploader;
 mod api;
+mod session;
+mod terminal;
 
 use settings::{Action, Settings};
 use commands::record::RecordLocation;

@@ -8,14 +8,13 @@ extern crate url;
 extern crate serde_json;
 
 use std::io::prelude::*;
-use chrono::Utc;
 use std::env;
 use std::collections::HashMap;
 use std::str;
 use uploader::UploadBuilder;
 use std::io::LineWriter;
 use pty_shell::*;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use std::path::PathBuf;
 use std::result::Result;
@@ -23,18 +22,17 @@ use failure::{err_msg, Error};
 use failure::ResultExt;
 use url::Url;
 use termion;
-use std;
 use tempfile::NamedTempFile;
 use settings::RecordSettings;
+use session::asciicast::AsciicastSession;
+use session::raw::RawSession;
+use session::Session;
+use terminal::{Height, Width};
 
 #[derive(Debug, Fail)]
 enum RecordFailure {
     #[fail(display = "unable to write to file: {}: file exists", path)]
     FileExists { path: String },
-    #[fail(display = "unable to write asciicast entry: {}", _0)]
-    AsciicastEntryWrite(#[cause] std::io::Error),
-    #[fail(display = "unable to write raw output: {}", _0)]
-    RawOutputWrite(#[cause] std::io::Error),
 }
 
 pub fn get_elapsed_seconds(duration: &Duration) -> f64 {
@@ -65,73 +63,25 @@ where
     child_env
 }
 
-fn write_asciicast_event<W: ?Sized>(
-    writer: &mut LineWriter<Box<W>>,
-    event_type: asciicast::EventType,
-    since_start: Duration,
-    data: &[u8],
-) -> Result<(), Error>
-where
-    W: Write,
-{
-    // Generate asciicast entry.
-    let entry = asciicast::Entry {
-        time: get_elapsed_seconds(&since_start),
-        event_type,
-        event_data: str::from_utf8(data)?.to_string(),
-    };
-
-    // Serialize it to a JSON string.
-    let j = serde_json::to_string(&entry)?;
-
-    // Write it out.
-    writeln!(writer, "{}", j).map_err(RecordFailure::AsciicastEntryWrite)?;
-    Ok(())
-}
-
-fn write_raw_output<W: ?Sized>(writer: &mut LineWriter<Box<W>>, data: &[u8]) -> Result<(), Error>
-where
-    W: Write,
-{
-    let raw_out = str::from_utf8(data)?;
-    write!(writer, "{}", raw_out).map_err(RecordFailure::RawOutputWrite)?;
-    Ok(())
-}
-
 pub enum RecordLocation {
     Local(PathBuf),
     Remote(Url),
 }
 
-struct Shell<W: ?Sized>
-where
-    W: Write,
-{
-    writer: LineWriter<Box<W>>,
-    clock: Instant,
-    raw: bool,
+struct Shell {
+    session: Box<Session>,
 }
 
-impl<W: ?Sized> PtyHandler for Shell<W>
-where
-    W: Write,
-{
+impl PtyHandler for Shell {
     fn input(&mut self, _input: &[u8]) {
         /* do something with input */
         //println!("In: {:?}", input);
     }
 
     fn output(&mut self, output: &[u8]) {
-        if self.raw {
-            write_raw_output(self.writer.by_ref(), output).unwrap();
-        } else {
-            write_asciicast_event(
-                self.writer.by_ref(),
-                asciicast::EventType::Output,
-                self.clock.elapsed(),
-                output,
-            ).unwrap();
-        }
+        self.session
+            .write_output(output)
+            .expect("unable to write output");
     }
 
     fn resize(&mut self, _winsize: &winsize::Winsize) {
@@ -140,7 +90,7 @@ where
 
     fn shutdown(&mut self) {
         /* prepare for shutdown */
-        self.writer.flush().unwrap();
+        self.session.end().expect("unable to end session");
     }
 }
 
@@ -187,26 +137,19 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
     let tmp_path = tmp.path().to_path_buf();
     let tmp_handle = tmp.reopen()?;
 
-    let mut writer: LineWriter<Box<Write>> = LineWriter::new(Box::new(tmp_handle));
+    let mut session: Box<Session> = match settings.raw {
+        true => Box::new(RawSession::new(Box::new(LineWriter::new(tmp_handle)))),
+        false => Box::new(AsciicastSession::new(Box::new(LineWriter::new(tmp_handle)))),
+    };
 
-    if !settings.raw {
-        // TODO: Now that we always write to a tempfile and we don't support streaming,
-        // perhaps write the header at the end so we can fill out `duration`?
-        let header = asciicast::Header {
-            version: 2,
-            width: u32::from(cols),
-            height: u32::from(rows),
-            timestamp: Some(Utc::now()),
-            duration: None,
-            idle_time_limit: settings.idle_time_limit,
-            // TODO: Command support.
-            command: None,
-            title: settings.title.clone(),
-            env: Some(capture_environment_vars(vec!["SHELL", "TERM"])),
-        };
-        let json_header = serde_json::to_string(&header).context("Cannot convert header to JSON")?;
-        writeln!(writer, "{}", json_header).context("Cannot write header")?;
-    }
+    session.write_header(
+        &Height(u32::from(rows)),
+        &Width(u32::from(cols)),
+        settings.idle_time_limit.clone(),
+        None, // TODO: Command.
+        settings.title.clone(),
+        Some(capture_environment_vars(vec!["SHELL", "TERM"])),
+    )?;
 
     // Write out the recording banner for interactive sessions.
     let mut stdout = StandardStream::stdout(ColorChoice::Always);
@@ -222,11 +165,7 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
 
     let child = tty::Fork::from_ptmx()?;
     restore_termios();
-    let shell = Shell {
-        writer,
-        clock: Instant::now(),
-        raw: settings.raw,
-    };
+    let shell = Shell { session };
     child.proxy(shell)?;
 
     let child_env = get_environment_for_child(env::vars());
@@ -258,11 +197,6 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
 #[cfg(test)]
 mod tests {
     use super::*;
-    use asciicast;
-    use std::io::Cursor;
-    use std::io::LineWriter;
-    use std::time::Duration;
-    use std::any::Any;
     use settings::RecordSettings;
     use std::path::PathBuf;
 
@@ -291,43 +225,6 @@ mod tests {
         }
     }
 
-    fn write_mock_asciicast_event(
-        event_type: asciicast::EventType,
-        duration: Duration,
-        data: String,
-    ) -> String {
-        // Tests write to memory.
-        let c = Cursor::new(vec![0; 15]);
-        let mut writer = LineWriter::new(Box::new(c));
-
-        // Serialize and write the event.
-        write_asciicast_event(&mut writer, event_type, duration, data.as_bytes()).unwrap();
-
-        // First we get our Box from the LineWriter.
-        let box_from_writer: Box<Any> = writer.into_inner().unwrap();
-        // Then we get our Cursor from the Box.
-        let c = box_from_writer.downcast::<Cursor<Vec<u8>>>().unwrap();
-        // Then we get the Vec from the Cursor.
-        let buff = c.into_inner();
-
-        // The Vec contains what was written...return it as a String.
-        String::from_utf8(buff).unwrap()
-    }
-
-    fn write_mock_raw_output(data: String) -> String {
-        let c = Cursor::new(vec![0; 11]);
-        let mut writer = LineWriter::new(Box::new(c));
-
-        // Write the raw output.
-        write_raw_output(&mut writer, data.as_bytes()).unwrap();
-
-        let box_from_writer: Box<Any> = writer.into_inner().unwrap();
-        let c = box_from_writer.downcast::<Cursor<Vec<u8>>>().unwrap();
-        let buff = c.into_inner();
-
-        String::from_utf8(buff).unwrap()
-    }
-
     #[test]
     fn test_elapsed_whole_seconds() {
         let d = Duration::new(5, 0);
@@ -340,22 +237,6 @@ mod tests {
         let d = Duration::new(42, 123);
         let result = get_elapsed_seconds(&d);
         assert_eq!(result, 42.000000123);
-    }
-
-    #[test]
-    fn test_writing_asciicast_output_event() {
-        let result = write_mock_asciicast_event(
-            asciicast::EventType::Output,
-            Duration::new(123, 456),
-            "Hello world".to_string(),
-        );
-        assert_eq!(result, "[123.000000456,\"o\",\"Hello world\"]\n");
-    }
-
-    #[test]
-    fn test_writing_raw_output() {
-        let result = write_mock_raw_output("Hello world".to_string());
-        assert_eq!(result, "Hello world");
     }
 
     #[test]
