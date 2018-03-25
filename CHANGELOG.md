@@ -23,7 +23,8 @@
 
   Note: Due to this change terminal-to-terminal streaming is now possible,
   as mentioned in this [asciinema blog post](http://blog.asciinema.org/post/two-point-o/).
-  Locally via a unix pipe:
+
+  Locally via a Unix pipe:
 
   ```bash
   mkfifo /tmp/demo.pipe
