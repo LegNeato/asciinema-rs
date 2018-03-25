@@ -136,6 +136,7 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
             .write(true)
             .create(true)
             .truncate(settings.overwrite)
+            .append(settings.append)
             .open(&p)?,
         None => tmp.reopen()?,
     };
@@ -146,14 +147,16 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
         Box::new(AsciicastSession::new(Box::new(LineWriter::new(handle))))
     };
 
-    session.write_header(
-        &Height(u32::from(rows)),
-        &Width(u32::from(cols)),
-        settings.idle_time_limit,
-        None, // TODO: Command.
-        settings.title.clone(),
-        Some(capture_environment_vars(vec!["SHELL", "TERM"])),
-    )?;
+    if !settings.append {
+        session.write_header(
+            &Height(u32::from(rows)),
+            &Width(u32::from(cols)),
+            settings.idle_time_limit,
+            None, // TODO: Command.
+            settings.title.clone(),
+            Some(capture_environment_vars(vec!["SHELL", "TERM"])),
+        )?;
+    }
 
     // Write out the recording banner for interactive sessions.
     let mut stdout = StandardStream::stdout(ColorChoice::Always);
