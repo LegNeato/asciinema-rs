@@ -9,39 +9,39 @@ pub fn get_elapsed_seconds(duration: &Duration) -> f64 {
 
 pub(crate) struct Clock {
     instant: Instant,
-    manual_duration: Option<Duration>,
-    manual_now: Option<DateTime<Utc>>,
+    duration_override: Option<Duration>,
+    now_override: Option<DateTime<Utc>>,
 }
 
 impl Clock {
     pub(crate) fn new() -> Self {
         Clock {
             instant: Instant::now(),
-            manual_duration: None,
-            manual_now: None,
+            duration_override: None,
+            now_override: None,
         }
     }
     #[inline]
     pub(crate) fn now(&self) -> DateTime<Utc> {
-        match self.manual_now {
+        match self.now_override {
             Some(x) => x,
             None => Utc::now(),
         }
     }
     #[inline]
     pub(crate) fn elapsed(&self) -> Duration {
-        match self.manual_duration {
+        match self.duration_override {
             Some(d) => d,
             None => self.instant.elapsed(),
         }
     }
     #[cfg(test)]
-    pub(crate) fn set_manual_duration(&mut self, duration: Duration) {
-        self.manual_duration = Some(duration);
+    pub(crate) fn set_duration_override(&mut self, duration: Duration) {
+        self.duration_override = Some(duration);
     }
     #[cfg(test)]
-    pub(crate) fn set_manual_now(&mut self, now: DateTime<Utc>) {
-        self.manual_now = Some(now);
+    pub(crate) fn set_now_override(&mut self, now: DateTime<Utc>) {
+        self.now_override = Some(now);
     }
 }
 

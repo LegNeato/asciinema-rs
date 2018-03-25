@@ -109,7 +109,7 @@ mod tests {
         {
             let mut session = AsciicastSession::new(Box::new(&mut v));
             let mut clock = Clock::new();
-            clock.set_manual_now(now);
+            clock.set_now_override(now);
             session.set_clock(clock);
             // Write header.
             session
@@ -127,7 +127,7 @@ mod tests {
         {
             let mut session = AsciicastSession::new(Box::new(&mut v));
             let mut clock = Clock::new();
-            clock.set_manual_duration(duration);
+            clock.set_duration_override(duration);
             session.set_clock(clock);
 
             // Write data.
