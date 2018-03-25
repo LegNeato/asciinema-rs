@@ -2,15 +2,15 @@ extern crate asciicast;
 extern crate chrono;
 extern crate serde_json;
 
-use std::io::prelude::*;
-use std::boxed::Box;
-use failure::Error;
-use terminal::{Height, Width};
-use std::collections::HashMap;
-use failure::ResultExt;
-use std::str;
 use super::clock::{get_elapsed_seconds, Clock};
 use super::{Session, SessionFailure};
+use failure::Error;
+use failure::ResultExt;
+use std::boxed::Box;
+use std::collections::HashMap;
+use std::io::prelude::*;
+use std::str;
+use terminal::{Height, Width};
 
 pub struct AsciicastSession<'a> {
     clock: Clock,
@@ -90,8 +90,8 @@ impl<'a> Session for AsciicastSession<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::time::Duration;
     use chrono::{DateTime, Utc};
+    use std::time::Duration;
 
     fn write_asciicast_header(
         now: DateTime<Utc>,

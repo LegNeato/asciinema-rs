@@ -1,6 +1,6 @@
 use libc;
-use std::{ffi, ptr};
 use std::collections::HashMap;
+use std::{ffi, ptr};
 
 pub fn exec<S: AsRef<str>>(shell: S) {
     let env: Option<HashMap<String, String>> = None;

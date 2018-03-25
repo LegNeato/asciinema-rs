@@ -1,16 +1,16 @@
+use failure::Error;
 use std::path::PathBuf;
 use structopt::StructOpt;
 use url::Url;
 use url_serde;
-use failure::Error;
 use uuid::Uuid;
 
 mod cli;
 mod config;
 pub mod install;
 
-use self::config::AsciinemaConfig;
 use self::cli::CommandLine;
+use self::config::AsciinemaConfig;
 
 pub enum Action {
     Authenticate,

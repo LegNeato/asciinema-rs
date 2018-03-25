@@ -1,7 +1,7 @@
 use failure::Error;
-use terminal::{Height, Width};
-use std::collections::HashMap;
 use std;
+use std::collections::HashMap;
+use terminal::{Height, Width};
 
 pub mod asciicast;
 pub mod clock;

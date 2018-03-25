@@ -7,26 +7,26 @@ extern crate url;
 
 extern crate serde_json;
 
-use std::io::prelude::*;
-use std::env;
-use std::collections::HashMap;
-use std::str;
-use uploader::UploadBuilder;
-use std::io::LineWriter;
-use pty_shell::*;
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
-use std::path::PathBuf;
-use std::result::Result;
-use failure::{err_msg, Error};
 use failure::ResultExt;
-use url::Url;
-use termion;
-use tempfile::NamedTempFile;
-use settings::RecordSettings;
+use failure::{err_msg, Error};
+use pty_shell::*;
+use session::Session;
 use session::asciicast::AsciicastSession;
 use session::raw::RawSession;
-use session::Session;
+use settings::RecordSettings;
+use std::collections::HashMap;
+use std::env;
+use std::io::LineWriter;
+use std::io::prelude::*;
+use std::path::PathBuf;
+use std::result::Result;
+use std::str;
+use tempfile::NamedTempFile;
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use terminal::{Height, Width};
+use termion;
+use uploader::UploadBuilder;
+use url::Url;
 
 #[derive(Debug, Fail)]
 enum RecordFailure {

@@ -2,13 +2,13 @@ extern crate asciicast;
 extern crate chrono;
 extern crate serde_json;
 
-use std::io::prelude::*;
-use std::boxed::Box;
-use failure::Error;
-use terminal::{Height, Width};
-use std::collections::HashMap;
-use std::str;
 use super::{Session, SessionFailure};
+use failure::Error;
+use std::boxed::Box;
+use std::collections::HashMap;
+use std::io::prelude::*;
+use std::str;
+use terminal::{Height, Width};
 
 pub struct RawSession<'a> {
     writer: Box<Write + 'a>,

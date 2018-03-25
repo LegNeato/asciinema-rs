@@ -1,8 +1,8 @@
 use asciicast::{Entry, Header};
-use session::clock::get_elapsed_seconds;
 use commands::concatenate::get_file;
 use failure::Error;
 use serde_json;
+use session::clock::get_elapsed_seconds;
 use settings::PlaySettings;
 use std::io::prelude::*;
 use std::io::{self, BufReader, Write};

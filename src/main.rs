@@ -22,20 +22,20 @@ extern crate url;
 extern crate url_serde;
 extern crate uuid;
 
-mod commands;
-mod settings;
-mod uploader;
 mod api;
+mod commands;
 mod session;
+mod settings;
 mod terminal;
+mod uploader;
 
-use settings::{Action, Settings};
+use api::Api;
 use commands::record::RecordLocation;
 use failure::Error;
-use url::Url;
-use uploader::UploadBuilder;
-use api::Api;
 use settings::install::InstallInfo;
+use settings::{Action, Settings};
+use uploader::UploadBuilder;
+use url::Url;
 
 enum CommandResult {
     Authenticate(Result<Url, Error>),
