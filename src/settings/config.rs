@@ -1,8 +1,8 @@
-use failure::Error;
-use std::path::PathBuf;
-use std::env;
-use config::{Config, ConfigError, Environment, File};
 use super::{ApiSettings, RecordSettings};
+use config::{Config, ConfigError, Environment, File};
+use failure::Error;
+use std::env;
+use std::path::PathBuf;
 
 // Newtypes so we can keep the containing dir vs config file straight.
 #[derive(Debug)]

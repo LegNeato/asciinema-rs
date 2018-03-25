@@ -7,25 +7,25 @@ extern crate url;
 
 extern crate serde_json;
 
-use std::io::prelude::*;
 use chrono::Utc;
-use std::env;
-use std::collections::HashMap;
-use std::str;
-use uploader::UploadBuilder;
-use std::io::LineWriter;
+use failure::ResultExt;
+use failure::{err_msg, Error};
 use pty_shell::*;
-use std::time::{Duration, Instant};
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use settings::RecordSettings;
+use std;
+use std::collections::HashMap;
+use std::env;
+use std::io::LineWriter;
+use std::io::prelude::*;
 use std::path::PathBuf;
 use std::result::Result;
-use failure::{err_msg, Error};
-use failure::ResultExt;
-use url::Url;
-use termion;
-use std;
+use std::str;
+use std::time::{Duration, Instant};
 use tempfile::NamedTempFile;
-use settings::RecordSettings;
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use termion;
+use uploader::UploadBuilder;
+use url::Url;
 
 #[derive(Debug, Fail)]
 enum RecordFailure {
@@ -259,12 +259,12 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
 mod tests {
     use super::*;
     use asciicast;
+    use settings::RecordSettings;
+    use std::any::Any;
     use std::io::Cursor;
     use std::io::LineWriter;
-    use std::time::Duration;
-    use std::any::Any;
-    use settings::RecordSettings;
     use std::path::PathBuf;
+    use std::time::Duration;
 
     enum FileBehavior {
         NotSet,

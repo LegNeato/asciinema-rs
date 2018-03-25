@@ -1,10 +1,10 @@
+use api::Api;
 use failure::Error;
-use url;
-use url::Url;
 use settings::AuthenticateSettings;
 use settings::install::InstallInfo;
+use url;
+use url::Url;
 use uuid::Uuid;
-use api::Api;
 
 fn make_authentication_url(url: &Url, uuid: Uuid) -> Result<Url, url::ParseError> {
     url.join(&uuid.hyphenated().to_string())

@@ -1,12 +1,12 @@
+use api::Api;
 use failure::Error;
-use uuid::Uuid;
-use url::Url;
-use std::env;
+use os_type;
 use reqwest;
 use reqwest::header::{Headers, Location, UserAgent};
-use os_type;
-use api::Api;
+use std::env;
 use std::path::PathBuf;
+use url::Url;
+use uuid::Uuid;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 

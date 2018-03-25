@@ -1,12 +1,12 @@
 use super::config;
-use std::path::PathBuf;
 use failure::Error;
-use uuid::Uuid;
-use std::str::FromStr;
 use std::fs::File;
 use std::fs::create_dir_all;
 use std::io::Read;
 use std::io::Write;
+use std::path::PathBuf;
+use std::str::FromStr;
+use uuid::Uuid;
 
 fn get_install_id_file() -> Result<PathBuf, Error> {
     let mut location = config::get_config_dir()?.0;
