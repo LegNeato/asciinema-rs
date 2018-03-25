@@ -21,7 +21,7 @@ impl<'a> AsciicastSession<'a> {
     pub fn new(writer: Box<Write + 'a>) -> Self {
         AsciicastSession {
             clock: Clock::new(),
-            writer: writer,
+            writer,
         }
     }
     fn get_elapsed_seconds(&self) -> f64 {

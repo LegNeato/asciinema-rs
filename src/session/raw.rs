@@ -16,7 +16,7 @@ pub struct RawSession<'a> {
 
 impl<'a> RawSession<'a> {
     pub fn new(writer: Box<Write + 'a>) -> Self {
-        RawSession { writer: writer }
+        RawSession { writer }
     }
 }
 

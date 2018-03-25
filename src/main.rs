@@ -91,11 +91,7 @@ fn main() {
             ),
             Err(x) => handle_error(&x),
         },
-        CommandResult::Concatenate(x) => match x {
-            Ok(()) => 0,
-            Err(x) => handle_error(&x),
-        },
-        CommandResult::Play(x) => match x {
+        CommandResult::Concatenate(x) | CommandResult::Play(x) => match x {
             Ok(()) => 0,
             Err(x) => handle_error(&x),
         },

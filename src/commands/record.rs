@@ -132,15 +132,16 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
     let tmp_path = tmp.path().to_path_buf();
     let tmp_handle = tmp.reopen()?;
 
-    let mut session: Box<Session> = match settings.raw {
-        true => Box::new(RawSession::new(Box::new(LineWriter::new(tmp_handle)))),
-        false => Box::new(AsciicastSession::new(Box::new(LineWriter::new(tmp_handle)))),
+    let mut session: Box<Session> = if settings.raw {
+        Box::new(RawSession::new(Box::new(LineWriter::new(tmp_handle))))
+    } else {
+        Box::new(AsciicastSession::new(Box::new(LineWriter::new(tmp_handle))))
     };
 
     session.write_header(
         &Height(u32::from(rows)),
         &Width(u32::from(cols)),
-        settings.idle_time_limit.clone(),
+        settings.idle_time_limit,
         None, // TODO: Command.
         settings.title.clone(),
         Some(capture_environment_vars(vec!["SHELL", "TERM"])),
