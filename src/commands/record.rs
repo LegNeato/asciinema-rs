@@ -16,6 +16,7 @@ use session::raw::RawSession;
 use settings::RecordSettings;
 use std::collections::HashMap;
 use std::env;
+use std::fs::OpenOptions;
 use std::io::LineWriter;
 use std::io::prelude::*;
 use std::path::PathBuf;
@@ -130,12 +131,19 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
     // Sigh, I need to get better at Rust but this works.
     let tmp = NamedTempFile::new()?;
     let tmp_path = tmp.path().to_path_buf();
-    let tmp_handle = tmp.reopen()?;
+    let handle = match settings.file.clone() {
+        Some(p) => OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(settings.overwrite)
+            .open(&p)?,
+        None => tmp.reopen()?,
+    };
 
     let mut session: Box<Session> = if settings.raw {
-        Box::new(RawSession::new(Box::new(LineWriter::new(tmp_handle))))
+        Box::new(RawSession::new(Box::new(LineWriter::new(handle))))
     } else {
-        Box::new(AsciicastSession::new(Box::new(LineWriter::new(tmp_handle))))
+        Box::new(AsciicastSession::new(Box::new(LineWriter::new(handle))))
     };
 
     session.write_header(
@@ -175,14 +183,11 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
     // Return where recorded asciicast can be found.
     Ok(match settings.file.clone() {
         Some(p) => {
-            // Check again to see if we should write recording.
-            validate_output_path(settings)?;
-            // Move the temporary file into the user-specified path.
-            tmp.persist(&p)?;
+            // Written to the user-specified path.
             RecordLocation::Local(p)
         }
         None => {
-            // Upload the file to a remote service.
+            // Upload the temp file to a remote service.
             // TODO: Prompt to upload like the python client does.
             let uploader = builder.build().map_err(err_msg)?;
             RecordLocation::Remote(uploader.upload_file(tmp_path)?)
