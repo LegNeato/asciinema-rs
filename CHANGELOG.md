@@ -16,7 +16,7 @@
 ### Fixed
 
 * When a local recording output file is specified, events are now written
-  to the file in realtime.
+  to the file in realtime ([#17](https://github.com/LegNeato/asciinema-rs/issues/17)).
 
   Previously the events were queued and written to the
   output file at the end of the recording session.
