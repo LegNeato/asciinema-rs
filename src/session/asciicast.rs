@@ -9,7 +9,7 @@ use terminal::{Height, Width};
 use std::collections::HashMap;
 use failure::ResultExt;
 use std::str;
-use super::clock::Clock;
+use super::clock::{get_elapsed_seconds, Clock};
 use super::{Session, SessionFailure};
 
 pub struct AsciicastSession<'a> {
@@ -25,8 +25,7 @@ impl<'a> AsciicastSession<'a> {
         }
     }
     fn get_elapsed_seconds(&self) -> f64 {
-        let duration = self.clock.elapsed();
-        duration.as_secs() as f64 + (0.000_000_001 * f64::from(duration.subsec_nanos()))
+        get_elapsed_seconds(&self.clock.elapsed())
     }
     #[cfg(test)]
     pub(crate) fn set_clock(&mut self, c: Clock) {

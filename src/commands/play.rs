@@ -1,5 +1,5 @@
 use asciicast::{Entry, Header};
-use commands::record::get_elapsed_seconds;
+use session::clock::get_elapsed_seconds;
 use commands::concatenate::get_file;
 use failure::Error;
 use serde_json;

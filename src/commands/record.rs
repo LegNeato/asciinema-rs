@@ -14,7 +14,6 @@ use std::str;
 use uploader::UploadBuilder;
 use std::io::LineWriter;
 use pty_shell::*;
-use std::time::Duration;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 use std::path::PathBuf;
 use std::result::Result;
@@ -33,10 +32,6 @@ use terminal::{Height, Width};
 enum RecordFailure {
     #[fail(display = "unable to write to file: {}: file exists", path)]
     FileExists { path: String },
-}
-
-pub fn get_elapsed_seconds(duration: &Duration) -> f64 {
-    duration.as_secs() as f64 + (0.000_000_001 * f64::from(duration.subsec_nanos()))
 }
 
 fn capture_environment_vars(keys: Vec<&str>) -> HashMap<String, String> {
@@ -223,20 +218,6 @@ mod tests {
             raw: false,
             title: None,
         }
-    }
-
-    #[test]
-    fn test_elapsed_whole_seconds() {
-        let d = Duration::new(5, 0);
-        let result = get_elapsed_seconds(&d);
-        assert_eq!(result, 5.0);
-    }
-
-    #[test]
-    fn test_elapsed_fractional_seconds() {
-        let d = Duration::new(42, 123);
-        let result = get_elapsed_seconds(&d);
-        assert_eq!(result, 42.000000123);
     }
 
     #[test]
