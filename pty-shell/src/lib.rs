@@ -13,16 +13,16 @@ pub use self::error::*;
 use self::raw_handler::*;
 pub use self::terminal::*;
 use self::winsize::Winsize;
-use std::{fmt, io, result, thread};
-use std::io::{Read, Write};
 use std::collections::HashMap;
+use std::io::{Read, Write};
+use std::{fmt, io, result, thread};
 
 pub mod error;
 pub mod terminal;
 pub mod winsize;
 
-mod raw_handler;
 mod command;
+mod raw_handler;
 
 pub type Result<T> = result::Result<T, Error>;
 

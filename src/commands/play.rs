@@ -1,8 +1,8 @@
 use asciicast::{Entry, Header};
 use commands::concatenate::get_file;
-use commands::record::get_elapsed_seconds;
 use failure::Error;
 use serde_json;
+use session::clock::get_elapsed_seconds;
 use settings::PlaySettings;
 use std::fs::File;
 use std::io::prelude::*;

@@ -1,9 +1,9 @@
+use super::PtyHandler;
 use libc;
 use mio::*;
 use nix::sys::signal;
 use std::io::Read;
 use std::os::unix::io::AsRawFd;
-use super::PtyHandler;
 
 use tty;
 use winsize;

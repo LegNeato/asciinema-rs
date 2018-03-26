@@ -15,6 +15,42 @@
 
 ### Fixed
 
+* When a local recording output file is specified, events are now written
+  to the file in realtime ([#17](https://github.com/LegNeato/asciinema-rs/issues/17)).
+
+  Previously the events were queued and written to the
+  output file at the end of the recording session.
+
+  Note: Due to this change terminal-to-terminal streaming is now possible,
+  as mentioned in this [asciinema blog post](http://blog.asciinema.org/post/two-point-o/).
+
+  Locally via a Unix pipe:
+
+  ```bash
+  mkfifo /tmp/demo.pipe
+
+  # viewing terminal
+  asciinema play /tmp/demo.pipe
+
+  # recording terminal
+  asciinema rec /tmp/demo.pipe
+  ```
+
+  Over the network via `netcat`:
+
+  ```bash
+  # viewing terminal (hostname: node123)
+  asciinema play <(nc -l localhost 9999)
+
+  # recording terminal
+  asciinema rec >(nc node123 9999)
+  ```
+
+* When appending to a recording via `asciinema rec --append`,
+  the header is no longer written.
+
+  Previously the header was written regardless.
+
 * The terminal's width and height is correctly determined when recording during
   another recording.
 
