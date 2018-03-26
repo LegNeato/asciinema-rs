@@ -203,7 +203,6 @@ mod tests {
     use super::*;
     use settings::RecordSettings;
     use std::path::PathBuf;
-    use std::time::Duration;
 
     enum FileBehavior {
         NotSet,
