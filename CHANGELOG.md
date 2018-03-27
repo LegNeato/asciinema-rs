@@ -11,6 +11,9 @@
   would make playback twice as fast as realtime. A value of `0.5` would make
   playback half as fast as realtime.
 
+* Playback idle time can be adjusted via `asciinema play --idle-time-limit`. A
+  value of `2` would limit the playback idle time to a maximum of 2 seconds.
+
 * The cursor can be hidden during playback via `asciinema play --hide-cursor`.
 
 ### Fixed
