@@ -48,7 +48,7 @@ dependencies = [
 
 [[package]]
 name = "asciinema"
-version = "0.3.1-pre"
+version = "0.4.0"
 dependencies = [
  "asciicast 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",

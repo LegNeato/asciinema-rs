@@ -1,5 +1,9 @@
 ## master
 
+* No changes yet
+
+## [[0.4.0] - 2018-03-26](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.4.0)
+
 ### Added
 
 * The `play` command is now supported for local and remote files ([#32](https://github.com/LegNeato/asciinema-rs/pull/32)).
