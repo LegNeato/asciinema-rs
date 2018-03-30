@@ -12,6 +12,7 @@ pub enum CommandLine {
     Authenticate(AuthenticateSettings),
     /// Print full output of terminal session
     #[structopt(name = "concatenate")]
+    #[structopt(raw(aliases = r#"&["cat"]"#))]
     Concatenate(ConcatenateSettings),
     /// Replay recorded asciicast in a terminal
     #[structopt(name = "play")]
