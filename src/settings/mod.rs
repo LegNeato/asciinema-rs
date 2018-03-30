@@ -110,7 +110,6 @@ pub struct PlaySettings {
 }
 
 #[derive(StructOpt, Clone, Debug, Deserialize)]
-#[structopt(name = "rec")]
 pub struct RecordSettings {
     /// Title of the asciicast
     #[structopt(short = "t", long = "title")]
