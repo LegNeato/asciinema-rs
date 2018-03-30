@@ -9,18 +9,21 @@ use structopt::clap::AppSettings;
 pub enum CommandLine {
     /// Manage recordings on asciinema.org account
     #[structopt(name = "authenticate")]
+    #[structopt(raw(visible_alias = r#""auth""#))]
     Authenticate(AuthenticateSettings),
     /// Print full output of terminal session
     #[structopt(name = "concatenate")]
-    #[structopt(raw(aliases = r#"&["cat"]"#))]
+    #[structopt(raw(visible_alias = r#""cat""#))]
     Concatenate(ConcatenateSettings),
     /// Replay recorded asciicast in a terminal
     #[structopt(name = "play")]
     Play(PlaySettings),
     /// Record terminal session
     #[structopt(name = "record")]
+    #[structopt(raw(visible_alias = r#""rec""#))]
     Record(RecordSettings),
     /// Upload locally saved terminal session to asciinema.org
     #[structopt(name = "upload")]
+    #[structopt(raw(visible_alias = r#""up""#))]
     Upload(UploadSettings),
 }
