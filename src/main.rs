@@ -3,6 +3,12 @@ extern crate alacritty;
 extern crate asciicast;
 extern crate chrono;
 extern crate config;
+#[cfg(feature = "gif")]
+extern crate gl;
+#[cfg(feature = "gif")]
+extern crate glutin;
+#[cfg(feature = "gif")]
+extern crate image;
 #[macro_use]
 extern crate derive_builder;
 #[macro_use]
