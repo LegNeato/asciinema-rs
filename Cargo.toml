@@ -11,6 +11,9 @@ license = "MIT/Apache-2.0"
 # https://github.com/rust-lang/cargo/issues/1565
 publish = false
 
+[features]
+gif = []
+
 [dependencies]
 config = "0.8"
 failure = "0.1.1"

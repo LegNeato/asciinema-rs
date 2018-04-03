@@ -15,6 +15,8 @@ use self::config::AsciinemaConfig;
 pub enum Action {
     Authenticate,
     Concatenate,
+    #[cfg(feature = "gif")]
+    Convert,
     Play,
     Record,
     Upload,
@@ -25,6 +27,8 @@ pub struct Settings {
     pub api_url: Url,
     pub authenticate: Option<AuthenticateSettings>,
     pub concatenate: Option<ConcatenateSettings>,
+    #[cfg(feature = "gif")]
+    pub convert: Option<ConvertSettings>,
     pub play: Option<PlaySettings>,
     pub record: Option<RecordSettings>,
     pub upload: Option<UploadSettings>,
@@ -49,6 +53,8 @@ impl Settings {
                 api_url,
                 authenticate: Some(AuthenticateSettings { ..x }),
                 concatenate: None,
+                #[cfg(feature = "gif")]
+                convert: None,
                 play: None,
                 record: None,
                 upload: None,
@@ -58,6 +64,19 @@ impl Settings {
                 api_url,
                 authenticate: None,
                 concatenate: Some(ConcatenateSettings { ..x }),
+                #[cfg(feature = "gif")]
+                convert: None,
+                play: None,
+                record: None,
+                upload: None,
+            }),
+            #[cfg(feature = "gif")]
+            CommandLine::Convert { 0: x } => Ok(Settings {
+                action: Action::Convert,
+                api_url,
+                authenticate: None,
+                concatenate: None,
+                convert: Some(ConvertSettings { ..x }),
                 play: None,
                 record: None,
                 upload: None,
@@ -67,6 +86,8 @@ impl Settings {
                 api_url,
                 authenticate: None,
                 concatenate: None,
+                #[cfg(feature = "gif")]
+                convert: None,
                 play: Some(PlaySettings { ..x }),
                 record: None,
                 upload: None,
@@ -76,6 +97,8 @@ impl Settings {
                 api_url,
                 authenticate: None,
                 concatenate: None,
+                #[cfg(feature = "gif")]
+                convert: None,
                 play: None,
                 record: Some(RecordSettings { ..x }),
                 upload: None,
@@ -85,6 +108,8 @@ impl Settings {
                 api_url,
                 authenticate: None,
                 concatenate: None,
+                #[cfg(feature = "gif")]
+                convert: None,
                 play: None,
                 record: None,
                 upload: Some(UploadSettings { ..x }),
@@ -159,6 +184,14 @@ pub struct UploadSettings {
 
 #[derive(StructOpt, Clone, Debug, Deserialize)]
 pub struct ConcatenateSettings {
+    /// Location can be either local recording or remote recording
+    #[structopt(name = "LOCATION", parse(from_os_str))]
+    pub location: PathBuf,
+}
+
+#[cfg(feature = "gif")]
+#[derive(StructOpt, Clone, Debug, Deserialize)]
+pub struct ConvertSettings {
     /// Location can be either local recording or remote recording
     #[structopt(name = "LOCATION", parse(from_os_str))]
     pub location: PathBuf,

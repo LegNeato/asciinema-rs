@@ -34,12 +34,16 @@ use commands::record::RecordLocation;
 use failure::Error;
 use settings::install::InstallInfo;
 use settings::{Action, Settings};
+#[cfg(feature = "gif")]
+use std::path::PathBuf;
 use uploader::UploadBuilder;
 use url::Url;
 
 enum CommandResult {
     Authenticate(Result<Url, Error>),
     Concatenate(Result<(), Error>),
+    #[cfg(feature = "gif")]
+    Convert(Result<PathBuf, Error>),
     Play(Result<(), Error>),
     Record(Result<RecordLocation, Error>),
     Upload(Result<Url, Error>),
@@ -60,6 +64,10 @@ fn main() {
         )),
         Action::Concatenate => {
             CommandResult::Concatenate(commands::concatenate::go(&settings.concatenate.unwrap()))
+        }
+        #[cfg(feature = "gif")]
+        Action::Convert => {
+            CommandResult::Convert(commands::convert::go(&settings.convert.unwrap()))
         }
         Action::Play => CommandResult::Play(commands::play::go(&settings.play.unwrap())),
         Action::Record => CommandResult::Record(commands::record::go(
@@ -89,6 +97,14 @@ fn main() {
                     url
                 ).as_str(),
             ),
+            Err(x) => handle_error(&x),
+        },
+        #[cfg(feature = "gif")]
+        CommandResult::Convert(x) => match x {
+            Ok(p) => handle_output(&format!(
+                "converted asciicast saved to: {}",
+                p.to_string_lossy()
+            )),
             Err(x) => handle_error(&x),
         },
         CommandResult::Concatenate(x) | CommandResult::Play(x) => match x {
