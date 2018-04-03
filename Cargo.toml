@@ -12,9 +12,10 @@ license = "MIT/Apache-2.0"
 publish = false
 
 [features]
-gif = []
+gif = ["alacritty"]
 
 [dependencies]
+alacritty = { path = "alacritty", optional = true }
 config = "0.8"
 failure = "0.1.1"
 termcolor = "0.3"

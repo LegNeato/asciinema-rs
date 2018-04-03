@@ -1,3 +1,5 @@
+#[cfg(feature = "gif")]
+extern crate alacritty;
 extern crate asciicast;
 extern crate chrono;
 extern crate config;
