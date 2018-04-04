@@ -2,69 +2,110 @@ use alacritty;
 use alacritty::cli;
 use alacritty::config::Config;
 use alacritty::display::{Display, DisplayCommand, InitialSize};
+use alacritty::event;
 use alacritty::event::Notify;
-use alacritty::event_loop::{self, EventLoop, WindowNotifier};
+
+use alacritty::ansi::Handler;
+use alacritty::event_loop::{self, EventLoop, Msg, WindowNotifier};
 use alacritty::sync::FairMutex;
 use alacritty::term::{SizeInfo, Term};
-use alacritty::tty::{self, Pty};
+use alacritty::tty::{self, process_should_exit, Pty};
 use asciicast::{Entry, Header};
 use commands::concatenate::get_file;
+use failure::Error;
+use gif::{Encoder, Frame};
 use gl;
 use gl::types::*;
 use glutin;
 use glutin::{Api, GlContext, GlProfile, GlRequest, MouseButton, MouseScrollDelta, VirtualKeyCode,
              WindowEvent};
-use image::{DynamicImage, ImageFormat};
+use image::{DynamicImage, ImageBuffer, RgbaImage, ImageFormat, imageops};
 use serde_json;
 use session::clock::get_elapsed_seconds;
+use settings::ConvertSettings;
 use settings::PlaySettings;
 use std::borrow::Cow;
+use std::cell::RefCell;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader, StdoutLock, Write};
 use std::os::raw::c_void;
-use std::time::Instant;
-use tempfile::NamedTempFile;
-
-use failure::Error;
-use settings::ConvertSettings;
-use std::cell::RefCell;
 use std::path::PathBuf;
 use std::ptr;
 use std::rc::Rc;
 use std::sync::Arc;
-
-pub struct IsControlHeld(bool);
-
-pub enum Event {
-    Blank,
-    CharInput(char, IsControlHeld),
-    StringInput(String),
-    StrInput(&'static str),
-    WindowResized(u32, u32),
-    HiDPIFactorChanged(f32),
-    ChangeFontSize(i8),
-    ResetFontSize,
-}
+use std::time::{Duration, Instant};
+use std::{thread, time};
+use tempfile::{self, NamedTempFile};
+use color_quant::NeuQuant;
 
 struct Notifier;
 
 impl WindowNotifier for Notifier {
     fn notify(&self) {
-        // TODO: redraw?
+        // No-op.
     }
 }
 
-pub struct State {
-    config: Config,
-    display: Display,
-    terminal: Arc<FairMutex<Term>>,
-    pty: Pty,
-    loop_notifier: event_loop::Notifier,
-    pub event_queue: Vec<Event>,
+fn neuquant_palettize(width: u16, height: u16, pixels: &mut [u8], sample_rate: u16) -> NeuQuant {
+    let image_len: u64 = (width as u64 * height as u64 * 4 / sample_rate as u64 / sample_rate as u64) as u64;
+    let width = width as usize;
+    let sample_rate = sample_rate as usize;
+    let transparent_black = [0u8; 4];
+
+    let mut temp: Vec<_> = Vec::with_capacity(image_len as usize);
+    let mut n = 0;
+    for px in pixels.chunks_mut(4) {
+        n = n + 1;
+        if sample_rate > 1 {
+            if n % sample_rate != 0 || (n / width) % sample_rate != 0 {
+                continue;
+            }
+        }
+        if px[3] == 0 {
+            temp.extend_from_slice(&transparent_black);
+        } else {
+            temp.extend_from_slice(&px[..3]);
+            temp.push(255);
+        }
+    }
+
+    let time_quant = Instant::now();
+    let quant = NeuQuant::new(10, 256, &temp);
+    eprintln!("Neuquant: Computed palette in {:?}", time_quant.elapsed());
+    quant
 }
 
+fn frame_from_rgba(width: u16, height: u16, pixels: &mut [u8]) -> Frame<'static> {
+        assert_eq!(width as usize * height as usize * 4, pixels.len());
+        let mut frame = Frame::default();
+        let mut transparent = None;
+        for pix in pixels.chunks_mut(4) {
+            if pix[3] != 0 {
+                pix[3] = 0xFF;
+            } else {
+                transparent = Some([pix[0], pix[1], pix[2], pix[3]])
+            }
+        }
+        frame.width = width;
+        frame.height = height;
+        /*
+        let nq = color_quant::NeuQuant::new(1, 256, pixels);
+        */
+        let nq = neuquant_palettize(width, height, pixels, 8);
+        frame.buffer = Cow::Owned(pixels.chunks(4).map(|pix| nq.index_of(pix) as u8).collect());
+        frame.palette = Some(nq.color_map_rgb());
+        frame.transparent = if let Some(t) = transparent {
+            Some(nq.index_of(&t) as u8)
+        } else {
+            None
+        };
+        frame
+    }
+
 pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
+    let _ = alacritty::logging::initialize(&alacritty::cli::Options::default());
+
     let location = settings.location.clone();
     let mut temp: NamedTempFile = NamedTempFile::new()?;
     let file = get_file(location, &mut temp)?;
@@ -77,9 +118,13 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
     let res: Result<Header, serde_json::Error> = serde_json::from_str(line.as_str());
     let header = res.unwrap();
 
+    // TODO: Do not hardcode.
+    let WIDTH = 564;
+    let HEIGHT = 340;
+
     let gl_request = GlRequest::Specific(Api::OpenGl, (3, 3));
     let gl_profile = GlProfile::Core;
-    let window = glutin::HeadlessRendererBuilder::new(header.width.clone(), header.height.clone())
+    let window = glutin::HeadlessRendererBuilder::new(WIDTH, HEIGHT)
         //.with_gl(gl_request)
         //.with_gl_profile(gl_profile)
         .build()
@@ -89,40 +134,9 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
 
     //gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
     alacritty::gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
-    /*
-    unsafe {
-            let mut framebuffer = 0;
-            let mut texture = 0;
-            gl.GenFramebuffers(1, &mut framebuffer);
-            gl.BindFramebuffer(gl::FRAMEBUFFER, framebuffer);
-            gl.GenTextures(1, &mut texture);
-            gl.BindTexture(gl::TEXTURE_2D, texture);
-            gl.TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
-            gl.TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
-            gl.TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, header.width.clone(), header.height.clone(),
-                         0, gl::RGBA, gl::UNSIGNED_BYTE, ptr::null());
-            gl.FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, gl::TEXTURE_2D, texture, 0);
-            let status = gl.CheckFramebufferStatus(gl::FRAMEBUFFER);
-            if status != gl::FRAMEBUFFER_COMPLETE {
-              panic!("Error while creating the framebuffer");
-            }
-        }
-        */
-    {
-        let mut framebuffer = Framebuffer::new(header.width.clone(), header.height.clone());
-        framebuffer.bind();
-    }
 
-    /*
-    unsafe {
-        gl::Viewport(
-            0,
-            0,
-            header.width.clone() as i32,
-            header.height.clone() as i32,
-        );
-    }
-*/
+    let mut framebuffer = Framebuffer::new(WIDTH, HEIGHT);
+    framebuffer.bind();
 
     let config = Config::default();
     let mut options = cli::Options::default();
@@ -132,6 +146,15 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
         Display::new(&config, InitialSize::Cells(config.dimensions()), 1.0).expect("Display::new");
 
     let size = display.size().clone();
+    /*
+    let window = glutin::HeadlessRendererBuilder::new(size.width.clone() as u32, size.height.clone() as u32)
+        //.with_gl(gl_request)
+        //.with_gl_profile(gl_profile)
+        .build()
+        .unwrap();
+    unsafe { window.make_current().expect("Couldn't make window current") };
+    alacritty::gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+*/
     println!("SIZE: {:?}", size.clone());
 
     //framebuffer.unbind();
@@ -150,56 +173,119 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
         options.ref_test,
     );
 
-    let mut loop_notifier = event_loop::Notifier(event_loop.channel());
-    let _io_thread = event_loop.spawn(None);
-    /*
-    let mut event_queue = Vec::new();
-    //let mut data;
+    let message_channel = event_loop.channel();
 
-    let base = Instant::now();
+    //let mut loop_notifier = event_loop::Notifier(event_loop.channel());
+    //let io_thread = event_loop.spawn(None);
+
+    let mut parser = alacritty::ansi::Processor::new();
+
+    //let mut image_frames = Vec::new();
+
+    //let mut locked_terminal = terminal.lock();
+
+    let p = PathBuf::from("/tmp/output.gif");
+
+    let mut file = File::create(&p)?;
+    let mut encoder = Encoder::new(
+        file,
+        size.width.clone() as u16,
+        size.height.clone() as u16,
+        &[],
+    )?;
+
     for line in reader.lines() {
+        println!("LINE!");
         let entry: Entry = serde_json::from_str(line.unwrap().as_str())?;
-        loop {
-            if entry.time <= get_elapsed_seconds(&base.elapsed()) {
-                let data = entry.event_data.clone();
-                event_queue.push(Box::new(data.clone().to_owned()));
-                break;
-            }
+        let data = entry.event_data.clone();
+        for byte in data.as_bytes() {
+            println!("BYTE!");
+            let mut locked_terminal = terminal.lock();
+            parser.advance(
+                &mut *locked_terminal,
+                *byte,
+                &mut pty.reader(),
+            );
         }
-    }
+        println!("LOCKING!");
+        let mut locked_terminal = terminal.lock();
+        locked_terminal.dirty = true;
+        if locked_terminal.needs_draw() {
+            display.draw(locked_terminal, &config, None, true);
+        }
+        println!("IMG!");
 
-    for data in event_queue {
-        loop_notifier.notify(data.as_bytes());
-    }
-    */
-    let mut locked_terminal = terminal.lock();
-    display.draw(locked_terminal, &config, None, true);
+        //let mut img =
+        //    DynamicImage::new_rgba8(size.width.clone() as u32, size.height.clone() as u32);
+            let mut img: RgbaImage = ImageBuffer::new(size.width.clone() as u32, size.height.clone() as u32);
+            //let mut pixels = img.into_raw();
 
-    let mut img = DynamicImage::new_rgba8(header.width.clone(), header.height.clone());
-    unsafe {
-        let pixels = img.as_mut_rgba8().unwrap();
-        alacritty::gl::PixelStorei(alacritty::gl::PACK_ALIGNMENT, 1);
-        alacritty::gl::ReadPixels(
-            0,
-            0,
-            size.width.clone() as i32,
-            size.height.clone() as i32,
-            alacritty::gl::RGBA,
-            alacritty::gl::UNSIGNED_BYTE,
-            pixels.as_mut_ptr() as *mut c_void,
+        unsafe {
+            println!("READING PIXELS!");
+
+            //let pixels = img.as_mut_rgba8().unwrap();
+
+            alacritty::gl::PixelStorei(alacritty::gl::PACK_ALIGNMENT, 1);
+            alacritty::gl::ReadPixels(
+                0,
+                0,
+                size.width.clone() as i32,
+                size.height.clone() as i32,
+                alacritty::gl::RGBA,
+                alacritty::gl::UNSIGNED_BYTE,
+                img.as_mut_ptr() as *mut GLvoid,
+            );
+        }
+        println!("FLIPPING!");
+
+         let img = imageops::flip_vertical(&img);
+
+        //let img = img.flipv();
+
+        println!("Making Frame!");
+
+/*
+        let frame = Frame::from_rgba(
+            size.width.clone() as u16,
+            size.height.clone() as u16,
+            img.into_raw().as_mut_slice(),
+            //pixels.as_mut_slice(),
         );
-        // gl_check_error!();
+        */
+
+        let frame = frame_from_rgba(size.width.clone() as u16,
+        size.height.clone() as u16, &mut img.into_vec());
+
+        /*
+        let mut frame = Frame::default();
+        frame.buffer = Cow::Owned(img.into_vec());
+        */
+
+        println!("Writing Frame!");
+        encoder.write_frame(&frame)?;
+        println!("DONE!");
+
     }
 
-    let img = img.flipv();
+    //message_channel
+    //    .send(Msg::Shutdown)
+    //    .expect("Error sending shutdown to event loop");
 
-    let p = PathBuf::from("/tmp/output.png");
+    //io_thread.join().expect("join thread");
 
-    let mut file = File::create(&p).unwrap();
+    let mut locked_terminal = terminal.lock();
+    locked_terminal.dirty = true;
+    if locked_terminal.needs_draw() {
+        display.draw(locked_terminal, &config, None, true);
+    }
+
+
+    /*
     if let Err(err) = img.save(&mut file, ImageFormat::PNG) {
         //error!("{}", err);
         unimplemented!();
     }
+    */
     Ok(p)
 }
 
@@ -271,6 +357,10 @@ impl Framebuffer {
             {
                 panic!("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
             }
+            /*
+            alacritty::gl::ClearColor(0.0, 1.0, 0.0, 1.0);
+            alacritty::gl::Clear(gl::COLOR_BUFFER_BIT);
+            */
             alacritty::gl::BindFramebuffer(alacritty::gl::FRAMEBUFFER, 0);
         }
 

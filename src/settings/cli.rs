@@ -1,4 +1,4 @@
-#[cfg(feature = "gif")]
+#[cfg(feature = "output_gif")]
 use super::ConvertSettings;
 use super::{AuthenticateSettings, ConcatenateSettings, PlaySettings, RecordSettings,
             UploadSettings};
@@ -18,7 +18,7 @@ pub enum CommandLine {
     #[structopt(raw(visible_alias = r#""cat""#))]
     Concatenate(ConcatenateSettings),
     /// Convert an asciicast to a different format
-    #[cfg(feature = "gif")]
+    #[cfg(feature = "output_gif")]
     #[structopt(name = "convert")]
     Convert(ConvertSettings),
     /// Replay recorded asciicast in a terminal

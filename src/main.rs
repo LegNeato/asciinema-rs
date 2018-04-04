@@ -1,13 +1,17 @@
-#[cfg(feature = "gif")]
+#[cfg(feature = "output_gif")]
 extern crate alacritty;
 extern crate asciicast;
 extern crate chrono;
 extern crate config;
-#[cfg(feature = "gif")]
+#[cfg(feature = "output_gif")]
+extern crate color_quant;
+#[cfg(feature = "output_gif")]
+extern crate gif;
+#[cfg(feature = "output_gif")]
 extern crate gl;
-#[cfg(feature = "gif")]
+#[cfg(feature = "output_gif")]
 extern crate glutin;
-#[cfg(feature = "gif")]
+#[cfg(feature = "output_gif")]
 extern crate image;
 #[macro_use]
 extern crate derive_builder;
@@ -42,7 +46,7 @@ use commands::record::RecordLocation;
 use failure::Error;
 use settings::install::InstallInfo;
 use settings::{Action, Settings};
-#[cfg(feature = "gif")]
+#[cfg(feature = "output_gif")]
 use std::path::PathBuf;
 use uploader::UploadBuilder;
 use url::Url;
@@ -50,7 +54,7 @@ use url::Url;
 enum CommandResult {
     Authenticate(Result<Url, Error>),
     Concatenate(Result<(), Error>),
-    #[cfg(feature = "gif")]
+    #[cfg(feature = "output_gif")]
     Convert(Result<PathBuf, Error>),
     Play(Result<(), Error>),
     Record(Result<RecordLocation, Error>),
@@ -73,7 +77,7 @@ fn main() {
         Action::Concatenate => {
             CommandResult::Concatenate(commands::concatenate::go(&settings.concatenate.unwrap()))
         }
-        #[cfg(feature = "gif")]
+        #[cfg(feature = "output_gif")]
         Action::Convert => {
             CommandResult::Convert(commands::convert::go(&settings.convert.unwrap()))
         }
@@ -107,7 +111,7 @@ fn main() {
             ),
             Err(x) => handle_error(&x),
         },
-        #[cfg(feature = "gif")]
+        #[cfg(feature = "output_gif")]
         CommandResult::Convert(x) => match x {
             Ok(p) => handle_output(&format!(
                 "converted asciicast saved to: {}",
