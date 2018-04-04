@@ -2,9 +2,9 @@
 extern crate alacritty;
 extern crate asciicast;
 extern crate chrono;
-extern crate config;
 #[cfg(feature = "output_gif")]
 extern crate color_quant;
+extern crate config;
 #[cfg(feature = "output_gif")]
 extern crate gif;
 #[cfg(feature = "output_gif")]
@@ -13,6 +13,8 @@ extern crate gl;
 extern crate glutin;
 #[cfg(feature = "output_gif")]
 extern crate image;
+#[cfg(feature = "output_gif")]
+extern crate indicatif;
 #[macro_use]
 extern crate derive_builder;
 #[macro_use]

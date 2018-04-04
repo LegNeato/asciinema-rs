@@ -11,6 +11,7 @@ use alacritty::sync::FairMutex;
 use alacritty::term::{SizeInfo, Term};
 use alacritty::tty::{self, process_should_exit, Pty};
 use asciicast::{Entry, Header};
+use color_quant::NeuQuant;
 use commands::concatenate::get_file;
 use failure::Error;
 use gif::{Encoder, Frame};
@@ -19,7 +20,7 @@ use gl::types::*;
 use glutin;
 use glutin::{Api, GlContext, GlProfile, GlRequest, MouseButton, MouseScrollDelta, VirtualKeyCode,
              WindowEvent};
-use image::{DynamicImage, ImageBuffer, RgbaImage, ImageFormat, imageops};
+use image::{imageops, DynamicImage, ImageBuffer, ImageFormat, RgbaImage};
 use serde_json;
 use session::clock::get_elapsed_seconds;
 use settings::ConvertSettings;
@@ -37,7 +38,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::{thread, time};
 use tempfile::{self, NamedTempFile};
-use color_quant::NeuQuant;
+use indicatif::ProgressBar;
 
 struct Notifier;
 
@@ -48,7 +49,8 @@ impl WindowNotifier for Notifier {
 }
 
 fn neuquant_palettize(width: u16, height: u16, pixels: &mut [u8], sample_rate: u16) -> NeuQuant {
-    let image_len: u64 = (width as u64 * height as u64 * 4 / sample_rate as u64 / sample_rate as u64) as u64;
+    let image_len: u64 =
+        (width as u64 * height as u64 * 4 / sample_rate as u64 / sample_rate as u64) as u64;
     let width = width as usize;
     let sample_rate = sample_rate as usize;
     let transparent_black = [0u8; 4];
@@ -76,32 +78,32 @@ fn neuquant_palettize(width: u16, height: u16, pixels: &mut [u8], sample_rate: u
     quant
 }
 
-fn frame_from_rgba(width: u16, height: u16, pixels: &mut [u8]) -> Frame<'static> {
-        assert_eq!(width as usize * height as usize * 4, pixels.len());
-        let mut frame = Frame::default();
-        let mut transparent = None;
-        for pix in pixels.chunks_mut(4) {
-            if pix[3] != 0 {
-                pix[3] = 0xFF;
-            } else {
-                transparent = Some([pix[0], pix[1], pix[2], pix[3]])
-            }
-        }
-        frame.width = width;
-        frame.height = height;
-        /*
-        let nq = color_quant::NeuQuant::new(1, 256, pixels);
-        */
-        let nq = neuquant_palettize(width, height, pixels, 8);
-        frame.buffer = Cow::Owned(pixels.chunks(4).map(|pix| nq.index_of(pix) as u8).collect());
-        frame.palette = Some(nq.color_map_rgb());
-        frame.transparent = if let Some(t) = transparent {
-            Some(nq.index_of(&t) as u8)
+fn frame_from_rgba(width: u16, height: u16, pixels: &mut [u8], delay: u16) -> Frame<'static> {
+    assert_eq!(width as usize * height as usize * 4, pixels.len());
+    let mut frame = Frame::default();
+    let mut transparent = None;
+    for pix in pixels.chunks_mut(4) {
+        if pix[3] != 0 {
+            pix[3] = 0xFF;
         } else {
-            None
-        };
-        frame
+            transparent = Some([pix[0], pix[1], pix[2], pix[3]])
+        }
     }
+    frame.width = width;
+    frame.height = height;
+    frame.delay = delay;
+    // A higher number here means we sample fewer pixels, which is faster but produces less
+    // accurate colors.
+    let nq = neuquant_palettize(width, height, pixels, 4);
+    frame.buffer = Cow::Owned(pixels.chunks(4).map(|pix| nq.index_of(pix) as u8).collect());
+    frame.palette = Some(nq.color_map_rgb());
+    frame.transparent = if let Some(t) = transparent {
+        Some(nq.index_of(&t) as u8)
+    } else {
+        None
+    };
+    frame
+}
 
 pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
     let _ = alacritty::logging::initialize(&alacritty::cli::Options::default());
@@ -194,37 +196,51 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
         &[],
     )?;
 
-    for line in reader.lines() {
-        println!("LINE!");
-        let entry: Entry = serde_json::from_str(line.unwrap().as_str())?;
+    let lines: Vec<String> = reader.lines().map(|l| l.expect("Could not parse line")).collect();
+    let pb = ProgressBar::new(lines.len() as u64);
+    let mut previous_time = 0.0;
+
+    for line in lines {
+        let entry: Entry = serde_json::from_str(line.as_str())?;
+
         let data = entry.event_data.clone();
         for byte in data.as_bytes() {
-            println!("BYTE!");
             let mut locked_terminal = terminal.lock();
-            parser.advance(
-                &mut *locked_terminal,
-                *byte,
-                &mut pty.reader(),
-            );
+            parser.advance(&mut *locked_terminal, *byte, &mut pty.reader());
         }
-        println!("LOCKING!");
+
+        // Clamp to max ~100fps (~.01s).
+        let seconds_delta = (entry.time.clone() - previous_time.clone());
+        if previous_time > 0.0 && seconds_delta < 0.1 {
+            pb.inc(1);
+            continue;
+        }
+
+        let time_in_ms = (entry.time.clone() - previous_time.clone()) * 1000_f64; // enrty time is in seconds.
+        let gif_frame_delay: u16 = if time_in_ms > 9.0 {
+            (time_in_ms / 10 as f64) as u16
+        } else {
+            0
+        }; // Delay is in 10s of ms.
+        /*
+        println!(
+            "entry: {}, previous: {}, time_in_ms: {}, gif_frame_delay: {}",
+            entry.time.clone(),
+            previous_time.clone(),
+            time_in_ms.clone(),
+            gif_frame_delay.clone()
+        );
+        */
+
         let mut locked_terminal = terminal.lock();
         locked_terminal.dirty = true;
         if locked_terminal.needs_draw() {
             display.draw(locked_terminal, &config, None, true);
         }
-        println!("IMG!");
-
-        //let mut img =
-        //    DynamicImage::new_rgba8(size.width.clone() as u32, size.height.clone() as u32);
-            let mut img: RgbaImage = ImageBuffer::new(size.width.clone() as u32, size.height.clone() as u32);
-            //let mut pixels = img.into_raw();
+        let mut img: RgbaImage =
+            ImageBuffer::new(size.width.clone() as u32, size.height.clone() as u32);
 
         unsafe {
-            println!("READING PIXELS!");
-
-            //let pixels = img.as_mut_rgba8().unwrap();
-
             alacritty::gl::PixelStorei(alacritty::gl::PACK_ALIGNMENT, 1);
             alacritty::gl::ReadPixels(
                 0,
@@ -236,34 +252,20 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
                 img.as_mut_ptr() as *mut GLvoid,
             );
         }
-        println!("FLIPPING!");
 
-         let img = imageops::flip_vertical(&img);
+        let img = imageops::flip_vertical(&img);
 
-        //let img = img.flipv();
-
-        println!("Making Frame!");
-
-/*
-        let frame = Frame::from_rgba(
+        let frame = frame_from_rgba(
             size.width.clone() as u16,
             size.height.clone() as u16,
-            img.into_raw().as_mut_slice(),
-            //pixels.as_mut_slice(),
+            &mut img.into_vec(),
+            gif_frame_delay,
         );
-        */
 
-        let frame = frame_from_rgba(size.width.clone() as u16,
-        size.height.clone() as u16, &mut img.into_vec());
-
-        /*
-        let mut frame = Frame::default();
-        frame.buffer = Cow::Owned(img.into_vec());
-        */
-
-        println!("Writing Frame!");
         encoder.write_frame(&frame)?;
-        println!("DONE!");
+
+        previous_time = entry.time.clone();
+        pb.inc(1);
 
     }
 
@@ -278,7 +280,6 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
     if locked_terminal.needs_draw() {
         display.draw(locked_terminal, &config, None, true);
     }
-
 
     /*
     if let Err(err) = img.save(&mut file, ImageFormat::PNG) {
