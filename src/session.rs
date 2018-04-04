@@ -4,13 +4,11 @@ use terminal::{Height, Width};
 extern crate asciicast;
 extern crate chrono;
 extern crate serde_json;
-use self::clock::{get_elapsed_seconds, Clock};
+use clock::{get_elapsed_seconds, Clock};
 use output_formats::Msg;
 use std::boxed::Box;
 use std::str;
 use std::sync::mpsc::Sender;
-
-pub mod clock;
 
 pub struct Session {
     clock: Clock,

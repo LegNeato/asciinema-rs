@@ -23,6 +23,7 @@ extern crate url_serde;
 extern crate uuid;
 
 mod api;
+mod clock;
 mod commands;
 mod output_formats;
 mod session;
