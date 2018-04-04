@@ -21,6 +21,7 @@ use glutin;
 use glutin::{Api, GlContext, GlProfile, GlRequest, MouseButton, MouseScrollDelta, VirtualKeyCode,
              WindowEvent};
 use image::{imageops, DynamicImage, ImageBuffer, ImageFormat, RgbaImage};
+use indicatif::{ProgressBar, ProgressStyle};
 use serde_json;
 use session::clock::get_elapsed_seconds;
 use settings::ConvertSettings;
@@ -38,15 +39,6 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::{thread, time};
 use tempfile::{self, NamedTempFile};
-use indicatif::ProgressBar;
-
-struct Notifier;
-
-impl WindowNotifier for Notifier {
-    fn notify(&self) {
-        // No-op.
-    }
-}
 
 fn neuquant_palettize(width: u16, height: u16, pixels: &mut [u8], sample_rate: u16) -> NeuQuant {
     let image_len: u64 =
@@ -74,7 +66,6 @@ fn neuquant_palettize(width: u16, height: u16, pixels: &mut [u8], sample_rate: u
 
     let time_quant = Instant::now();
     let quant = NeuQuant::new(10, 256, &temp);
-    eprintln!("Neuquant: Computed palette in {:?}", time_quant.elapsed());
     quant
 }
 
@@ -106,8 +97,6 @@ fn frame_from_rgba(width: u16, height: u16, pixels: &mut [u8], delay: u16) -> Fr
 }
 
 pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
-    let _ = alacritty::logging::initialize(&alacritty::cli::Options::default());
-
     let location = settings.location.clone();
     let mut temp: NamedTempFile = NamedTempFile::new()?;
     let file = get_file(location, &mut temp)?;
@@ -118,26 +107,22 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
     // Skip the first line, and maybe Header is needed later.
     let _len = reader.read_line(&mut line);
     let res: Result<Header, serde_json::Error> = serde_json::from_str(line.as_str());
-    let header = res.unwrap();
+    let header = res?;
 
     // TODO: Do not hardcode.
-    let WIDTH = 564;
-    let HEIGHT = 340;
+    let hardcoded_width = 564;
+    let hardcoded_height = 340;
 
-    let gl_request = GlRequest::Specific(Api::OpenGl, (3, 3));
-    let gl_profile = GlProfile::Core;
-    let window = glutin::HeadlessRendererBuilder::new(WIDTH, HEIGHT)
-        //.with_gl(gl_request)
-        //.with_gl_profile(gl_profile)
+    let window = glutin::HeadlessRendererBuilder::new(hardcoded_width, hardcoded_height)
         .build()
-        .unwrap();
+        .expect("create headless renderer");
 
     unsafe { window.make_current().expect("Couldn't make window current") };
 
     //gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
     alacritty::gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
 
-    let mut framebuffer = Framebuffer::new(WIDTH, HEIGHT);
+    let mut framebuffer = Framebuffer::new(hardcoded_width, hardcoded_height);
     framebuffer.bind();
 
     let config = Config::default();
@@ -148,43 +133,13 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
         Display::new(&config, InitialSize::Cells(config.dimensions()), 1.0).expect("Display::new");
 
     let size = display.size().clone();
-    /*
-    let window = glutin::HeadlessRendererBuilder::new(size.width.clone() as u32, size.height.clone() as u32)
-        //.with_gl(gl_request)
-        //.with_gl_profile(gl_profile)
-        .build()
-        .unwrap();
-    unsafe { window.make_current().expect("Couldn't make window current") };
-    alacritty::gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
-*/
-    println!("SIZE: {:?}", size.clone());
-
-    //framebuffer.unbind();
-    //let framebuffer2 = Framebuffer::new(size.width.clone() as u32, size.height.clone() as u32);
-    //framebuffer2.bind();
 
     let terminal = Term::new(&config, display.size().to_owned());
     let terminal = Arc::new(FairMutex::new(terminal));
 
     let pty = tty::new(&config, &options, &display.size(), None);
 
-    let event_loop = EventLoop::new(
-        Arc::clone(&terminal),
-        Box::new(Notifier),
-        pty.reader(),
-        options.ref_test,
-    );
-
-    let message_channel = event_loop.channel();
-
-    //let mut loop_notifier = event_loop::Notifier(event_loop.channel());
-    //let io_thread = event_loop.spawn(None);
-
     let mut parser = alacritty::ansi::Processor::new();
-
-    //let mut image_frames = Vec::new();
-
-    //let mut locked_terminal = terminal.lock();
 
     let p = PathBuf::from("/tmp/output.gif");
 
@@ -196,11 +151,15 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
         &[],
     )?;
 
-    let lines: Vec<String> = reader.lines().map(|l| l.expect("Could not parse line")).collect();
+    let lines: Vec<String> = reader
+        .lines()
+        .map(|l| l.expect("Could not parse line"))
+        .collect();
+    let entry_count = lines.len();
     let pb = ProgressBar::new(lines.len() as u64);
     let mut previous_time = 0.0;
 
-    for line in lines {
+    for (n, line) in lines.iter().enumerate() {
         let entry: Entry = serde_json::from_str(line.as_str())?;
 
         let data = entry.event_data.clone();
@@ -211,7 +170,10 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
 
         // Clamp to max ~100fps (~.01s).
         let seconds_delta = (entry.time.clone() - previous_time.clone());
-        if previous_time > 0.0 && seconds_delta < 0.1 {
+        if n > 0 && // We always render the first frame.
+           n < entry_count-1 && // We always render the last frame.
+           seconds_delta < 0.1
+        {
             pb.inc(1);
             continue;
         }
@@ -222,15 +184,6 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
         } else {
             0
         }; // Delay is in 10s of ms.
-        /*
-        println!(
-            "entry: {}, previous: {}, time_in_ms: {}, gif_frame_delay: {}",
-            entry.time.clone(),
-            previous_time.clone(),
-            time_in_ms.clone(),
-            gif_frame_delay.clone()
-        );
-        */
 
         let mut locked_terminal = terminal.lock();
         locked_terminal.dirty = true;
@@ -266,27 +219,8 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
 
         previous_time = entry.time.clone();
         pb.inc(1);
-
     }
 
-    //message_channel
-    //    .send(Msg::Shutdown)
-    //    .expect("Error sending shutdown to event loop");
-
-    //io_thread.join().expect("join thread");
-
-    let mut locked_terminal = terminal.lock();
-    locked_terminal.dirty = true;
-    if locked_terminal.needs_draw() {
-        display.draw(locked_terminal, &config, None, true);
-    }
-
-    /*
-    if let Err(err) = img.save(&mut file, ImageFormat::PNG) {
-        //error!("{}", err);
-        unimplemented!();
-    }
-    */
     Ok(p)
 }
 
