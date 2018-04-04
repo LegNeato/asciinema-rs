@@ -9,15 +9,15 @@ extern crate serde_json;
 
 use failure::ResultExt;
 use failure::{err_msg, Error};
+use output_formats::Output;
+use output_formats::asciicast::AsciicastOutput;
+use output_formats::raw::RawOutput;
 use pty_shell::*;
 use session::Session;
-use session::asciicast::AsciicastSession;
-use session::raw::RawSession;
 use settings::RecordSettings;
 use std::collections::HashMap;
 use std::env;
 use std::fs::OpenOptions;
-use std::io::LineWriter;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::result::Result;
@@ -141,11 +141,20 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
         None => tmp.reopen()?,
     };
 
-    let mut session: Box<Session> = if settings.raw {
-        Box::new(RawSession::new(Box::new(LineWriter::new(handle))))
+    let output_thread;
+    let output_channel;
+
+    if settings.raw {
+        let output = RawOutput::new(handle);
+        output_channel = output.channel();
+        output_thread = output.spawn();
     } else {
-        Box::new(AsciicastSession::new(Box::new(LineWriter::new(handle))))
-    };
+        let output = AsciicastOutput::new(handle);
+        output_channel = output.channel();
+        output_thread = output.spawn();
+    }
+
+    let mut session = Box::new(Session::new(vec![output_channel]));
 
     if !settings.append {
         session.write_header(
@@ -182,6 +191,8 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
         Some(child_env),
     )?;
     child.wait()?;
+
+    output_thread.join().expect("join thread")?;
 
     // Return where recorded asciicast can be found.
     Ok(match settings.file.clone() {

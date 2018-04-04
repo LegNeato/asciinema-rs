@@ -24,6 +24,7 @@ extern crate uuid;
 
 mod api;
 mod commands;
+mod output_formats;
 mod session;
 mod settings;
 mod terminal;

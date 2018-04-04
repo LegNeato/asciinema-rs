@@ -36,6 +36,7 @@ impl Api {
     pub fn authentication_url(self) -> Url {
         self.authentication_url
     }
+    #[cfg(test)]
     pub fn base_url(self) -> Url {
         self.base_url
     }

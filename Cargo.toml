@@ -17,7 +17,7 @@ failure = "0.1.1"
 termcolor = "0.3"
 structopt = "0.2"
 libc = "0.2.36"
-asciicast = "0.2.1"
+asciicast = "0.2.2"
 chrono = { version = "0.4", features = ["serde"] }
 reqwest = "0.8.5"
 serde_derive = "^1.0.8"
@@ -30,7 +30,7 @@ termion = "1.0.0"
 uuid = { version = "0.6", features = ["v4", "serde"] }
 os_type = "2.0.0"
 derive_builder = "0.5.1"
-tempfile = "2.2.0"
+tempfile = "3.0.0"
 
 [package.metadata.release]
 dev-version-ext = "pre"
