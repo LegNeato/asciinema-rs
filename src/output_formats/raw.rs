@@ -71,6 +71,18 @@ mod tests {
     }
 
     #[test]
+    fn test_writes_input_event() {
+        let entry = Entry {
+            event_type: EventType::Input,
+            event_data: "test input".to_string(),
+            time: 42.0,
+        };
+        let line = first_line_for_message!(RawOutput, Msg::Input(Box::new(entry.clone())));
+        assert!(line.is_some());
+        assert_eq!(line.expect("a line").unwrap(), entry.event_data);
+    }
+
+    #[test]
     fn test_writes_output_event() {
         let entry = Entry {
             event_type: EventType::Output,

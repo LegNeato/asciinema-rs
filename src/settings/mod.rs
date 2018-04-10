@@ -127,6 +127,9 @@ pub struct RecordSettings {
     /// Append to existing recording
     #[structopt(long = "append")]
     pub append: bool,
+    /// Enable stdin (keyboard) recording, disabled by default
+    #[structopt(long = "stdin")]
+    pub record_stdin: bool,
     /// Save only raw stdout output
     #[structopt(long = "raw", raw(requires = r#""FILE""#))]
     pub raw: bool,

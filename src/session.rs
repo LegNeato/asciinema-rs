@@ -13,13 +13,15 @@ use std::sync::mpsc::Sender;
 pub struct Session {
     clock: Clock,
     outputs: Vec<Sender<Msg>>,
+    record_input: bool,
 }
 
 impl Session {
-    pub fn new(outputs: Vec<Sender<Msg>>) -> Self {
+    pub fn new(outputs: Vec<Sender<Msg>>, record_input: bool) -> Self {
         Session {
             clock: Clock::new(),
             outputs,
+            record_input,
         }
     }
     fn get_elapsed_seconds(&self) -> f64 {
@@ -73,8 +75,20 @@ impl Session {
         Ok(())
     }
     #[allow(unused)]
-    pub fn write_input(&mut self, _data: &[u8]) -> Result<(), Error> {
-        println!("INPUT");
+    pub fn write_input(&mut self, data: &[u8]) -> Result<(), Error> {
+        if (self.record_input) {
+            // Generate asciicast entry.
+            let entry = asciicast::Entry {
+                time: self.get_elapsed_seconds(),
+                event_type: asciicast::EventType::Input,
+                event_data: str::from_utf8(data)?.to_string(),
+            };
+
+            // Write it out.
+            for channel in &self.outputs {
+                channel.send(Msg::Input(Box::new(entry.clone())))?;
+            }
+        }
         Ok(())
     }
     pub fn end(&mut self) -> Result<(), Error> {
@@ -97,10 +111,11 @@ mod tests {
 
     fn make_mock_session(
         tx: Sender<Msg>,
+        record_input: bool,
         now: Option<DateTime<Utc>>,
         duration: Option<Duration>,
     ) -> Session {
-        let mut session = Session::new(vec![tx]);
+        let mut session = Session::new(vec![tx], record_input);
         // Make clock deterministic
         let mut clock = Clock::new();
         if let Some(n) = now {
@@ -117,7 +132,7 @@ mod tests {
     fn sends_message_for_header() {
         let now = Utc::now();
         let (tx, rx) = channel();
-        let mut session = make_mock_session(tx, Some(now), None);
+        let mut session = make_mock_session(tx, false, Some(now), None);
 
         session
             .write_header(
@@ -148,12 +163,34 @@ mod tests {
             }))
         );
     }
+    #[test]
+    fn sends_message_for_input() {
+        let duration = Duration::new(123, 4);
+        let (tx, rx) = channel();
+        let mut session = make_mock_session(tx, true, None, Some(duration));
+
+        session
+            .write_input("hello input".to_string().as_bytes())
+            .unwrap();
+
+        let result = rx.try_recv();
+        assert!(result.is_ok());
+        let message = result.unwrap();
+        assert_eq!(
+            message,
+            Msg::Input(Box::new(Entry {
+                event_type: EventType::Input,
+                event_data: "hello input".to_string(),
+                time: 123.000000004,
+            }))
+        );
+    }
 
     #[test]
     fn sends_message_for_output() {
         let duration = Duration::new(5, 0);
         let (tx, rx) = channel();
-        let mut session = make_mock_session(tx, None, Some(duration));
+        let mut session = make_mock_session(tx, false, None, Some(duration));
 
         session
             .write_output("hello world".to_string().as_bytes())

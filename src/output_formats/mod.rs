@@ -14,7 +14,6 @@ pub mod raw;
 #[derive(Debug, PartialEq, Clone)]
 pub enum Msg {
     Header(Box<asciicast_format::Header>),
-    #[allow(unused)]
     Input(Box<asciicast_format::Entry>),
     Output(Box<asciicast_format::Entry>),
     Finish,

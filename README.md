@@ -47,7 +47,7 @@ contributors and is a great project for Rust beginners. **Please contribute!**
 #### Record (`asciinema rec`)
 
 * [x] Record `stdout`
-* [ ] [Record `stdin` via `--stdin`][issue.4]
+* [x] Record `stdin` via `--stdin`
 * [x] Upload to remote server
 * [x] Save to local file
 * [ ] [Prompt for where to save after recording][issue.5]

@@ -9,9 +9,9 @@ extern crate serde_json;
 
 use failure::ResultExt;
 use failure::{err_msg, Error};
-use output_formats::Output;
 use output_formats::asciicast::AsciicastOutput;
 use output_formats::raw::RawOutput;
+use output_formats::Output;
 use pty_shell::*;
 use session::Session;
 use settings::RecordSettings;
@@ -154,7 +154,7 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
         output_thread = output.spawn();
     }
 
-    let mut session = Box::new(Session::new(vec![output_channel]));
+    let mut session = Box::new(Session::new(vec![output_channel], settings.record_stdin));
 
     if !settings.append {
         session.write_header(
@@ -237,6 +237,7 @@ mod tests {
             idle_time_limit: None,
             raw: false,
             title: None,
+            record_stdin: false,
         }
     }
 

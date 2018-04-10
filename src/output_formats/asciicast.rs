@@ -80,6 +80,21 @@ mod tests {
     }
 
     #[test]
+    fn test_writes_input_event() {
+        let entry = Entry {
+            event_type: EventType::Input,
+            event_data: "test input".to_string(),
+            time: 123.4,
+        };
+        let line = first_line_for_message!(AsciicastOutput, Msg::Input(Box::new(entry.clone())));
+        assert!(line.is_some());
+        assert_eq!(
+            line.expect("a line").unwrap(),
+            "[123.4,\"i\",\"test input\"]".to_string()
+        );
+    }
+
+    #[test]
     fn test_writes_output_event() {
         let entry = Entry {
             event_type: EventType::Output,
