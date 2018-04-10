@@ -6,7 +6,9 @@ use structopt::clap::AppSettings;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "asciinema", author = "")]
-#[structopt(raw(global_settings = "&[AppSettings::VersionlessSubcommands, AppSettings::InferSubcommands]"))]
+#[structopt(
+    raw(global_settings = "&[AppSettings::VersionlessSubcommands, AppSettings::InferSubcommands]")
+)]
 /// Record and share your terminal sessions, the right way.
 pub enum CommandLine {
     /// Manage recordings on asciinema.org account

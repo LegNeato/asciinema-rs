@@ -40,6 +40,22 @@ use std::time::{Duration, Instant};
 use std::{thread, time};
 use tempfile::{self, NamedTempFile};
 
+#[derive(Debug, Fail)]
+enum ConvertFailure {
+    #[fail(
+        display = "Unable to generate image: texture height is too small: {}.\nTry setting a larger value via `--texture-height {}`.",
+        have,
+        need
+    )]
+    TextureHeightTooSmall { have: u32, need: u32 },
+    #[fail(
+        display = "Unable to generate image: texture width is too small: {}.\nTry setting a larger value via `--texture-width {}`.",
+        have,
+        need
+    )]
+    TextureWidthTooSmall { have: u32, need: u32 },
+}
+
 fn neuquant_palettize(width: u16, height: u16, pixels: &mut [u8], sample_rate: u16) -> NeuQuant {
     let image_len: u64 =
         (width as u64 * height as u64 * 4 / sample_rate as u64 / sample_rate as u64) as u64;
@@ -110,8 +126,8 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
     let header = res?;
 
     // TODO: Do not hardcode.
-    let hardcoded_width = 564;
-    let hardcoded_height = 340;
+    let hardcoded_width = 1024;
+    let hardcoded_height = 1024;
 
     let window = glutin::HeadlessRendererBuilder::new(hardcoded_width, hardcoded_height)
         .build()
@@ -133,6 +149,22 @@ pub fn go(settings: &ConvertSettings) -> Result<PathBuf, Error> {
         Display::new(&config, InitialSize::Cells(config.dimensions()), 1.0).expect("Display::new");
 
     let size = display.size().clone();
+
+    if hardcoded_width < *&size.width as u32 {
+        return Err(ConvertFailure::TextureWidthTooSmall {
+            have: hardcoded_width.clone(),
+            need: size.width as u32,
+        })?;
+    }
+
+    if hardcoded_height < *&size.height as u32 {
+        return Err(ConvertFailure::TextureHeightTooSmall {
+            have: hardcoded_height.clone(),
+            need: size.height as u32,
+        })?;
+    }
+
+    framebuffer.set_viewport(size.width.clone() as i32, size.height.clone() as i32);
 
     let terminal = Term::new(&config, display.size().to_owned());
     let terminal = Arc::new(FairMutex::new(terminal));
@@ -286,7 +318,8 @@ impl Framebuffer {
                 alacritty::gl::RENDERBUFFER,
                 rbo,
             ); // now actually attach it
-               // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+            alacritty::gl::Viewport(0, 0, width as i32, height as i32);
+            // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
             if alacritty::gl::CheckFramebufferStatus(alacritty::gl::FRAMEBUFFER)
                 != alacritty::gl::FRAMEBUFFER_COMPLETE
             {
@@ -306,6 +339,12 @@ impl Framebuffer {
         }
     }
 
+    pub fn set_viewport(&self, width: i32, height: i32) {
+        unsafe {
+            alacritty::gl::Viewport(0, 0, width, height);
+        }
+    }
+
     pub fn bind(&self) {
         unsafe { alacritty::gl::BindFramebuffer(alacritty::gl::FRAMEBUFFER, self.id) }
     }
@@ -319,14 +358,4 @@ impl Framebuffer {
             //alacritty::gl::BindFramebuffer(alacritty::gl::FRAMEBUFFER, 0);
         }
     }
-}
-
-#[cfg_attr(feature = "clippy", allow(too_many_arguments))]
-#[cfg_attr(feature = "clippy", allow(doc_markdown))]
-#[cfg_attr(feature = "clippy", allow(unreadable_literal))]
-#[allow(unused_mut)]
-pub mod mygl {
-    //pub use glutin::Gles2 as Gl;
-    #![allow(non_upper_case_globals)]
-    include!(concat!(env!("OUT_DIR"), "/gl_bindings.rs"));
 }

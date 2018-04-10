@@ -1,7 +1,7 @@
 use api::Api;
 use failure::Error;
-use settings::AuthenticateSettings;
 use settings::install::InstallInfo;
+use settings::AuthenticateSettings;
 use url;
 use url::Url;
 use uuid::Uuid;
