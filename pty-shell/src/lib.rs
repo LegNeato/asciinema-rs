@@ -1,5 +1,7 @@
-#![deny(missing_debug_implementations, trivial_casts, trivial_numeric_casts, unstable_features,
-        unused_import_braces, unused_qualifications)]
+#![deny(
+    missing_debug_implementations, trivial_casts, trivial_numeric_casts, unstable_features,
+    unused_import_braces, unused_qualifications
+)]
 
 extern crate libc;
 extern crate mio;
