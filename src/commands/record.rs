@@ -69,9 +69,10 @@ struct Shell {
 }
 
 impl PtyHandler for Shell {
-    fn input(&mut self, _input: &[u8]) {
-        /* do something with input */
-        //println!("In: {:?}", input);
+    fn input(&mut self, input: &[u8]) {
+        self.session
+            .write_input(input)
+            .expect("unable to write input");
     }
 
     fn output(&mut self, output: &[u8]) {
