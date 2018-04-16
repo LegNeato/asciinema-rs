@@ -6,6 +6,7 @@ extern crate derive_builder;
 #[macro_use]
 extern crate failure;
 extern crate libc;
+extern crate openssl_probe;
 extern crate os_type;
 extern crate pty_shell;
 extern crate reqwest;
@@ -48,6 +49,9 @@ enum CommandResult {
 }
 
 fn main() {
+    // Set proper env vars when statically compiled for musl on Linux.
+    openssl_probe::init_ssl_cert_env_vars();
+
     let settings = Settings::new().unwrap();
     let api = Api::new(&settings.api_url).unwrap();
     // Load install id from a file or generate a new one.

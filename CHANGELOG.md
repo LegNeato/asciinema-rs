@@ -1,5 +1,7 @@
 ## master
 
+### Added
+
 * The `--stdin` option is now supported when recording.
 
   Stdin recording allows for capturing of all characters typed in by the user
@@ -7,6 +9,11 @@
   (e.g. asciinema-player) to display pressed keys. Because **it's basically a
   key-logger** (scoped to a single shell instance), it’s disabled by default,
   and has to be explicitly enabled via the `--stdin` option.
+
+### Fixed
+
+* The OpenSSL certificate error thrown when uploading to asciinema.org
+  using the pre-compiled Linux binary has been fixed ([#40](https://github.com/LegNeato/asciinema-rs/issues/40)).
 
 ## [[0.4.0] - 2018-03-26](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.4.0)
 
