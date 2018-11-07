@@ -1,5 +1,6 @@
-use super::{AuthenticateSettings, ConcatenateSettings, PlaySettings, RecordSettings,
-            UploadSettings};
+use super::{
+    AuthenticateSettings, ConcatenateSettings, PlaySettings, RecordSettings, UploadSettings,
+};
 use structopt::clap::AppSettings;
 
 #[derive(StructOpt, Debug)]

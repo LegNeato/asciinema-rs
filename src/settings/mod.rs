@@ -116,7 +116,11 @@ pub struct RecordSettings {
     pub title: Option<String>,
     // TODO: command
     /// Limit recorded idle time to given number of seconds
-    #[structopt(name = "IDLE_TIME_LIMIT", short = "i", long = "idle-time-limit")]
+    #[structopt(
+        name = "IDLE_TIME_LIMIT",
+        short = "i",
+        long = "idle-time-limit"
+    )]
     pub idle_time_limit: Option<f64>,
     /// Answer "yes" to all prompts (e.g. upload confirmation)
     #[structopt(short = "y", long = "yes")]

@@ -2,7 +2,7 @@ use api::Api;
 use failure::Error;
 use os_type;
 use reqwest;
-use reqwest::header::{HeaderMap, USER_AGENT, LOCATION};
+use reqwest::header::{HeaderMap, LOCATION, USER_AGENT};
 use std::env;
 use std::path::PathBuf;
 use url::Url;
@@ -23,7 +23,10 @@ fn user_agent_string() -> String {
 
 fn construct_headers() -> HeaderMap {
     let mut headers = HeaderMap::new();
-    headers.insert(USER_AGENT, user_agent_string().parse().expect("valid user agent"));
+    headers.insert(
+        USER_AGENT,
+        user_agent_string().parse().expect("valid user agent"),
+    );
     headers
 }
 
