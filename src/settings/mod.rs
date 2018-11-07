@@ -141,7 +141,6 @@ pub struct RecordSettings {
 #[derive(StructOpt, Clone, Debug, Deserialize)]
 pub struct ApiSettings {
     ///  API server URL.
-    #[structopt(default_value = "https://asciinema.org")]
     #[serde(with = "url_serde")]
     pub url: Option<Url>,
 }

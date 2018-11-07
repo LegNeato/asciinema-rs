@@ -2,7 +2,7 @@ use api::Api;
 use failure::Error;
 use os_type;
 use reqwest;
-use reqwest::header::{Headers, Location, UserAgent};
+use reqwest::header::{HeaderMap, USER_AGENT, LOCATION};
 use std::env;
 use std::path::PathBuf;
 use url::Url;
@@ -21,9 +21,9 @@ fn user_agent_string() -> String {
     format!("asciinema-rs/{} {:?}/{}", VERSION, os.os_type, os.version)
 }
 
-fn construct_headers() -> Headers {
-    let mut headers = Headers::new();
-    headers.set(UserAgent::new(user_agent_string()));
+fn construct_headers() -> HeaderMap {
+    let mut headers = HeaderMap::new();
+    headers.insert(USER_AGENT, user_agent_string().parse().expect("valid user agent"));
     headers
 }
 
@@ -57,16 +57,17 @@ impl Upload {
 
         let location = response
             .headers()
-            .get::<Location>()
-            .map(|loc| response.url().join(loc));
+            .get(LOCATION)
+            .unwrap_or(Err(UploadFailure::InvalidResponseLocation {})?)
+            .to_str()
+            .map(|loc| response.url().join(loc))?;
 
         // TODO: Handle `Warning` header.
         // TODO: map status codes to app-specific failure messages.
 
         match location {
-            Some(Ok(loc)) => Ok(loc),
-            Some(Err(e)) => Err(e)?,
-            None => Err(UploadFailure::InvalidResponseLocation {})?,
+            Ok(loc) => Ok(loc),
+            Err(e) => Err(e)?,
         }
     }
 }

@@ -33,8 +33,8 @@ pub fn get_file(location: PathBuf, temp: &mut NamedTempFile) -> Result<File, Err
         let target = l.to_str().unwrap();
         let mut response = reqwest::get(target)?;
         match response.status() {
-            StatusCode::Ok => {}
-            StatusCode::NotFound => Err(ReqwestFailure::NotFound {
+            StatusCode::OK => {}
+            StatusCode::NOT_FOUND => Err(ReqwestFailure::NotFound {
                 res: target.to_string(),
             })?,
             s => Err(ReqwestFailure::Others {
