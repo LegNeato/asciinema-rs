@@ -142,7 +142,8 @@ mod tests {
                 None,
                 Some("test title".to_string()),
                 None,
-            ).unwrap();
+            )
+            .unwrap();
 
         let result = rx.try_recv();
         assert!(result.is_ok());

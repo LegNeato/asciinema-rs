@@ -20,7 +20,8 @@ pub fn exec_with_env<S: AsRef<str>>(shell: S, env: Option<HashMap<String, String
     let v = env.unwrap_or(HashMap::new());
     // We need to save the `CString`s in this scope, otherwise the pointers will be drefed
     // and all hell breaks loose.
-    let cstring_vars: Vec<ffi::CString> = v.iter()
+    let cstring_vars: Vec<ffi::CString> = v
+        .iter()
         .map(|(name, value)| ffi::CString::new(format!("{}={}", name, value)).unwrap())
         .collect();
     let mut env_vars: Vec<*const libc::c_char> = cstring_vars.iter().map(|c| c.as_ptr()).collect();

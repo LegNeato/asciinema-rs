@@ -93,7 +93,8 @@ fn main() {
                      (past and future ones) to your account, and allow you to manage \
                      them (change title/theme, delete) at asciinema.org.",
                     url
-                ).as_str(),
+                )
+                .as_str(),
             ),
             Err(x) => handle_error(&x),
         },
