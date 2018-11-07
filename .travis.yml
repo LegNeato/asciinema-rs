@@ -22,7 +22,7 @@ before_script:
 - rustup component add --toolchain nightly rustfmt-preview
 - which rustfmt || cargo install --force rustfmt-nightly
 script:
-- cargo +nightly fmt --all -- --write-mode=diff
+- cargo +nightly fmt --all -- --check
 - cargo build
 - cargo test -- --test-threads=1
 before_deploy:
