@@ -2,6 +2,10 @@
 
 * No changes yet
 
+## [[0.5.1] - 2018-11-07](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.5.1)
+
+* No changes yet
+
 ## [[0.5.0] - 2018-04-16](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.5.0)
 
 ### Added
