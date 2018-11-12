@@ -1,16 +1,20 @@
 ## master
 
-* No changes yet
+### Added
+
+- The INI config file used by the official python client is reused if it exists.
 
 ## [[0.5.1] - 2018-11-07](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.5.1)
 
-* No changes yet
+### Fixed
+
+- The OpenSSL version check error thrown when using a newer OpenSSL has been fixed ([#41](https://github.com/LegNeato/asciinema-rs/issues/41)).
 
 ## [[0.5.0] - 2018-04-16](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.5.0)
 
 ### Added
 
-* The `--stdin` option is now supported when recording.
+- The `--stdin` option is now supported when recording.
 
   Stdin recording allows for capturing of all characters typed in by the user
   in the currently recorded shell. This may be used by a player
@@ -20,30 +24,30 @@
 
 ### Fixed
 
-* The OpenSSL certificate error thrown when uploading to asciinema.org
+- The OpenSSL certificate error thrown when uploading to asciinema.org
   using the pre-compiled Linux binary has been fixed ([#40](https://github.com/LegNeato/asciinema-rs/issues/40)).
 
 ## [[0.4.0] - 2018-03-26](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.4.0)
 
 ### Added
 
-* The `play` command is now supported for local and remote files ([#32](https://github.com/LegNeato/asciinema-rs/pull/32)).
+- The `play` command is now supported for local and remote files ([#32](https://github.com/LegNeato/asciinema-rs/pull/32)).
 
   Note: support for interactive features such as pausing playback will be added
   in the future.
 
-* Playback speed can be adjusted via `asciinema play --speed`. A value of `2`
+- Playback speed can be adjusted via `asciinema play --speed`. A value of `2`
   would make playback twice as fast as realtime. A value of `0.5` would make
   playback half as fast as realtime.
 
-* Playback idle time can be adjusted via `asciinema play --idle-time-limit`. A
+- Playback idle time can be adjusted via `asciinema play --idle-time-limit`. A
   value of `2` would limit the playback idle time to a maximum of 2 seconds.
 
-* The cursor can be hidden during playback via `asciinema play --hide-cursor`.
+- The cursor can be hidden during playback via `asciinema play --hide-cursor`.
 
 ### Fixed
 
-* When a local recording output file is specified, events are now written
+- When a local recording output file is specified, events are now written
   to the file in realtime ([#17](https://github.com/LegNeato/asciinema-rs/issues/17)).
 
   Previously the events were queued and written to the
@@ -74,12 +78,12 @@
   asciinema rec >(nc node123 9999)
   ```
 
-* When appending to a recording via `asciinema rec --append`,
+- When appending to a recording via `asciinema rec --append`,
   the header is no longer written.
 
   Previously the header was written regardless.
 
-* The terminal's width and height is correctly determined when recording during
+- The terminal's width and height is correctly determined when recording during
   another recording.
 
   Previously the interior's recording failed to detect the terminal size and instead set the width and height to zero.
@@ -88,25 +92,25 @@
 
 ### Added
 
-* Additional command aliases are now supported, allowing brevity or verbosity at your discretion ([#12](https://github.com/LegNeato/asciinema-rs/issues/12)).
+- Additional command aliases are now supported, allowing brevity or verbosity at your discretion ([#12](https://github.com/LegNeato/asciinema-rs/issues/12)).
 
-  * `auth`: aliased to `authenticate` and `a`
-  * `cat`: aliased to `concatenate` and `c`
-  * `rec`: aliased to `record` and `r`
-  * `upload`: aliased to `up` and `u`
+  - `auth`: aliased to `authenticate` and `a`
+  - `cat`: aliased to `concatenate` and `c`
+  - `rec`: aliased to `record` and `r`
+  - `upload`: aliased to `up` and `u`
 
-* The `--raw` option is now supported when recording ([#19](https://github.com/LegNeato/asciinema-rs/pull/19)).
+- The `--raw` option is now supported when recording ([#19](https://github.com/LegNeato/asciinema-rs/pull/19)).
 
-* The environment variable `ASCIINEMA_REC` is set to `1` in recorded process
+- The environment variable `ASCIINEMA_REC` is set to `1` in recorded process
   environment variables ([#21](https://github.com/LegNeato/asciinema-rs/issues/21)).
 
   As mentioned in the [official client's usage](https://asciinema.org/docs/usage), this can be used by your shell's config file (`.bashrc`, `.zshrc`) to alter the prompt or play a sound when the shell is being recorded.
 
-* `SHELL` and `TERM` environment variables are captured by default when recording ([#7](https://github.com/LegNeato/asciinema-rs/issues/7)).
+- `SHELL` and `TERM` environment variables are captured by default when recording ([#7](https://github.com/LegNeato/asciinema-rs/issues/7)).
 
 ### Fixed
 
-* All existing environment variables are now set in the recorded process as well.
+- All existing environment variables are now set in the recorded process as well.
 
   Previously the recorded process did not inherit anything from the parent and instead had an empty environment.
 
@@ -114,12 +118,12 @@
 
 ### Added
 
-* Support for the `cat` subcommand ([#18](https://github.com/LegNeato/asciinema-rs/pull/18)).
+- Support for the `cat` subcommand ([#18](https://github.com/LegNeato/asciinema-rs/pull/18)).
 
 ### Fixed
 
-* The `url` value set in the `[api]` section of the [config](https://asciinema.org/docs/config) no longer needs a trailing slash to behave correctly.
+- The `url` value set in the `[api]` section of the [config](https://asciinema.org/docs/config) no longer needs a trailing slash to behave correctly.
 
 ## [[0.1.0] - 2018-03-12](https://github.com/LegNeato/asciinema-rs/releases/tag/v0.1.0)
 
-* Initial release
+- Initial release
