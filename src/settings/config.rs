@@ -31,7 +31,7 @@ impl AsciinemaConfig {
 
         let mut s = Config::new();
         s.merge(File::from(location.0).required(false))?;
-        s.merge(Environment::with_prefix("asciinema"))?;
+        s.merge(Environment::with_prefix("asciinema").separator("_"))?;
 
         match s.try_into() {
             Ok(x) => Ok(x),
