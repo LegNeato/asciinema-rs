@@ -72,18 +72,18 @@ impl PtyShell for tty::Fork {
 
     fn proxy<H: PtyHandler + 'static>(&self, handler: H) -> Result<()> {
         if let Some(master) = self.is_parent().ok() {
-            try!(setup_terminal(master));
-            try!(do_proxy(master, handler));
+            setup_terminal(master)?;
+            do_proxy(master, handler)?;
         }
         Ok(())
     }
 }
 
 fn do_proxy<H: PtyHandler + 'static>(pty: tty::Master, handler: H) -> Result<()> {
-    let mut event_loop = try!(mio::EventLoop::new());
+    let mut event_loop = mio::EventLoop::new()?;
 
     let mut writer = pty.clone();
-    let (input_reader, mut input_writer) = try!(mio::unix::pipe());
+    let (input_reader, mut input_writer) = mio::unix::pipe()?;
 
     thread::spawn(move || {
         handle_input(&mut writer, &mut input_writer).unwrap_or_else(|e| {
@@ -92,7 +92,7 @@ fn do_proxy<H: PtyHandler + 'static>(pty: tty::Master, handler: H) -> Result<()>
     });
 
     let mut reader = pty.clone();
-    let (output_reader, mut output_writer) = try!(mio::unix::pipe());
+    let (output_reader, mut output_writer) = mio::unix::pipe()?;
     let message_sender = event_loop.channel();
 
     thread::spawn(move || {
@@ -103,18 +103,18 @@ fn do_proxy<H: PtyHandler + 'static>(pty: tty::Master, handler: H) -> Result<()>
         message_sender.send(Message::Shutdown).unwrap();
     });
 
-    try!(event_loop.register(
+    event_loop.register(
         &input_reader,
         INPUT,
         mio::EventSet::readable(),
         mio::PollOpt::level()
-    ));
-    try!(event_loop.register(
+    )?;
+    event_loop.register(
         &output_reader,
         OUTPUT,
         mio::EventSet::readable(),
         mio::PollOpt::level()
-    ));
+    )?;
     RawHandler::register_sigwinch_handler();
 
     let mut raw_handler =
@@ -137,10 +137,10 @@ fn handle_input(
     let mut buf = [0; 128];
 
     loop {
-        let nread = try!(input.read(&mut buf));
+        let nread = input.read(&mut buf)?;
 
-        try!(writer.write(&buf[..nread]));
-        try!(handler_writer.write(&buf[..nread]));
+        writer.write(&buf[..nread])?;
+        handler_writer.write(&buf[..nread])?;
     }
 }
 
@@ -152,15 +152,15 @@ fn handle_output(
     let mut buf = [0; 1024 * 10];
 
     loop {
-        let nread = try!(reader.read(&mut buf));
+        let nread = reader.read(&mut buf)?;
 
         if nread <= 0 {
             break;
         } else {
-            try!(output.write(&buf[..nread]));
+            output.write(&buf[..nread])?;
             let _ = output.flush();
 
-            try!(handler_writer.write(&buf[..nread]));
+            handler_writer.write(&buf[..nread])?;
         }
     }
 
@@ -168,10 +168,10 @@ fn handle_output(
 }
 
 pub struct PtyCallbackData {
-    input_handler: Box<FnMut(&[u8])>,
-    output_handler: Box<FnMut(&[u8])>,
-    resize_handler: Box<FnMut(&Winsize)>,
-    shutdown_handler: Box<FnMut()>,
+    input_handler: Box<dyn FnMut(&[u8])>,
+    output_handler: Box<dyn FnMut(&[u8])>,
+    resize_handler: Box<dyn FnMut(&Winsize)>,
+    shutdown_handler: Box<dyn FnMut()>,
 }
 
 impl fmt::Debug for PtyCallbackData {

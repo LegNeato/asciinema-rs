@@ -1,6 +1,6 @@
 use std::{self, fmt, io};
 
-use tty;
+use crate::tty;
 
 #[derive(Debug)]
 pub enum Error {
@@ -9,11 +9,7 @@ pub enum Error {
 }
 
 impl std::error::Error for Error {
-    fn description(&self) -> &str {
-        "pty-shell error"
-    }
-
-    fn cause(&self) -> Option<&std::error::Error> {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match *self {
             Error::Pty(ref err) => Some(err),
             Error::Io(ref err) => Some(err),
@@ -23,7 +19,7 @@ impl std::error::Error for Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        std::error::Error::description(self).fmt(f)
+        write!(f, "pty-shell error")
     }
 }
 
