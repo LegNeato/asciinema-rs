@@ -12,6 +12,6 @@ keywords = ['pty', 'tty', 'shell', 'terminal']
 [dependencies]
 libc='0.2'
 mio='0.5'
-nix='0.10.0'
+nix='0.22.1'
 pty='0.2.2'
 termios='0.3.0'

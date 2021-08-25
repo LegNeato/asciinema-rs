@@ -85,13 +85,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "autocfg"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
+
+[[package]]
 name = "backtrace"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "89a47830402e9981c5c41223151efcced65a0510c13097c769cede7efb34782a"
 dependencies = [
  "backtrace-sys",
- "cfg-if 0.1.6",
+ "cfg-if 0.1.10",
  "libc",
  "rustc-demangle",
  "winapi 0.3.9",
@@ -125,9 +131,9 @@ checksum = "8dead7461c1127cf637931a1e50934eb6eee8bff2f74433ac7909e9afcee04a3"
 
 [[package]]
 name = "bitflags"
-version = "1.0.4"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "228047a76f468627ca71776ecdebd732a3423081fcf5125585bcd7c49886ce12"
+checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 
 [[package]]
 name = "build_const"
@@ -165,9 +171,9 @@ checksum = "f159dfd43363c4d08055a07703eb7a3406b0dac4d0584d96965a3262db3c9d16"
 
 [[package]]
 name = "cfg-if"
-version = "0.1.6"
+version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "082bb9b28e00d3c9d39cc03e64ce4cea0f1bb9b3fde493f0cbc008472d22bdf4"
+checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 
 [[package]]
 name = "cfg-if"
@@ -195,7 +201,7 @@ checksum = "b957d88f4b6a63b9d70d5f454ac8011819c6efa7727858f458ab71c756ce2d3e"
 dependencies = [
  "ansi_term",
  "atty",
- "bitflags 1.0.4",
+ "bitflags 1.2.1",
  "strsim",
  "textwrap",
  "unicode-width",
@@ -208,7 +214,7 @@ version = "0.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 dependencies = [
- "bitflags 1.0.4",
+ "bitflags 1.2.1",
 ]
 
 [[package]]
@@ -272,10 +278,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30fecfcac6abfef8771151f8be4abc9e4edc112c2bcb233314cafde2680536e9"
 dependencies = [
  "arrayvec",
- "cfg-if 0.1.6",
+ "cfg-if 0.1.10",
  "crossbeam-utils",
  "lazy_static 1.2.0",
- "memoffset",
+ "memoffset 0.2.1",
  "scopeguard",
 ]
 
@@ -318,7 +324,7 @@ version = "0.8.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "065f4d0c826fdaef059ac45487169d918558e3cf86c9d89f6e81cf52369126e5"
 dependencies = [
- "cfg-if 0.1.6",
+ "cfg-if 0.1.10",
 ]
 
 [[package]]
@@ -381,7 +387,7 @@ version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2e9763c69ebaae630ba35f74888db465e49e259ba1bc0eda7d06f4a067615d82"
 dependencies = [
- "bitflags 1.0.4",
+ "bitflags 1.2.1",
  "fuchsia-zircon-sys",
 ]
 
@@ -406,12 +412,6 @@ dependencies = [
  "futures",
  "num_cpus",
 ]
-
-[[package]]
-name = "gcc"
-version = "0.3.55"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f5f3913fa0bfe7ee1fd8248b6b9f42a5af4b9d65ec2dd2c3c26132b950ecfc2"
 
 [[package]]
 name = "h2"
@@ -553,12 +553,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a374c89b9db55895453a74c1e38861d9deec0b01b405a82516e9d5de4820dea1"
 
 [[package]]
-name = "lazycell"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ddba4c30a78328befecec92fc94970e53b3ae385827d28620f0f5bb2493081e0"
-
-[[package]]
 name = "libc"
 version = "0.2.100"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -631,7 +625,7 @@ version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0a3eb002f0535929f1199681417029ebea04aadc0c7a4224b46be99c7f5d6a16"
 dependencies = [
- "cfg-if 0.1.6",
+ "cfg-if 0.1.10",
  "libc",
  "version_check",
 ]
@@ -641,6 +635,15 @@ name = "memoffset"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0f9dc261e2b62d7a622bf416ea3c5245cdd5d9a7fcc428c0d06804dfce1775b3"
+
+[[package]]
+name = "memoffset"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "59accc507f1338036a0477ef61afdae33cde60840f4dfe481319ce3ad116ddf9"
+dependencies = [
+ "autocfg",
+]
 
 [[package]]
 name = "mime"
@@ -682,18 +685,18 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "0.6.16"
+version = "0.6.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71646331f2619b1026cc302f87a2b8b648d5c6dd6937846a16cc8ce0f347f432"
+checksum = "4afd66f5b91bf2a3bc13fad0e21caedac168ca4c707504e75585648ae80e4cc4"
 dependencies = [
+ "cfg-if 0.1.10",
  "fuchsia-zircon",
  "fuchsia-zircon-sys",
  "iovec",
  "kernel32-sys",
- "lazycell",
  "libc",
  "log 0.4.14",
- "miow 0.2.1",
+ "miow 0.2.2",
  "net2",
  "slab 0.4.1",
  "winapi 0.2.8",
@@ -707,7 +710,7 @@ checksum = "966257a94e196b11bb43aca423754d87429960a768de9414f3691d6957abf125"
 dependencies = [
  "iovec",
  "libc",
- "mio 0.6.16",
+ "mio 0.6.23",
 ]
 
 [[package]]
@@ -724,9 +727,9 @@ dependencies = [
 
 [[package]]
 name = "miow"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c1f2f3b1cf331de6896aabf6e9d55dca90356cc9960cca7eaaf408a355ae919"
+checksum = "ebd808424166322d4a38da87083bfddd3ac4c131334ed55856112eb06d46944d"
 dependencies = [
  "kernel32-sys",
  "net2",
@@ -754,11 +757,11 @@ dependencies = [
 
 [[package]]
 name = "net2"
-version = "0.2.33"
+version = "0.2.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42550d9fb7b6684a6d404d9fa7250c2eb2646df731d1c06afc06dcee9e1bcf88"
+checksum = "391630d12b68002ae1e25e8f974306474966550ad82dac6886fb8910c19568ae"
 dependencies = [
- "cfg-if 0.1.6",
+ "cfg-if 0.1.10",
  "libc",
  "winapi 0.3.9",
 ]
@@ -775,16 +778,15 @@ dependencies = [
 
 [[package]]
 name = "nix"
-version = "0.10.0"
+version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7fd5681d13fda646462cfbd4e5f2051279a89a544d50eb98c365b507246839f"
+checksum = "e7555d6c7164cc913be1ce7f95cbecdabda61eb2ccd89008524af306fb7f5031"
 dependencies = [
- "bitflags 1.0.4",
- "bytes 0.4.10",
- "cfg-if 0.1.6",
- "gcc",
+ "bitflags 1.2.1",
+ "cc",
+ "cfg-if 1.0.0",
  "libc",
- "void",
+ "memoffset 0.6.4",
 ]
 
 [[package]]
@@ -841,8 +843,8 @@ version = "0.10.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e1309181cdcbdb51bc3b6bedb33dfac2a83b3d585033d3f6d9e22e8c1928613"
 dependencies = [
- "bitflags 1.0.4",
- "cfg-if 0.1.6",
+ "bitflags 1.2.1",
+ "cfg-if 0.1.10",
  "foreign-types",
  "lazy_static 1.2.0",
  "libc",
@@ -984,7 +986,7 @@ version = "0.3.0"
 dependencies = [
  "libc",
  "mio 0.5.1",
- "nix 0.10.0",
+ "nix 0.22.1",
  "pty",
  "termios",
 ]
@@ -1386,7 +1388,7 @@ version = "3.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55c1195ef8513f3273d55ff59fe5da6940287a0d7a98331254397f464833675b"
 dependencies = [
- "cfg-if 0.1.6",
+ "cfg-if 0.1.10",
  "libc",
  "rand 0.5.5",
  "redox_syscall",
@@ -1460,7 +1462,7 @@ checksum = "6e93c78d23cc61aa245a8acd2c4a79c4d7fa7fb5c3ca90d5737029f043a84895"
 dependencies = [
  "bytes 0.4.10",
  "futures",
- "mio 0.6.16",
+ "mio 0.6.23",
  "tokio-codec",
  "tokio-current-thread",
  "tokio-executor",
@@ -1536,7 +1538,7 @@ dependencies = [
  "futures",
  "lazy_static 1.2.0",
  "log 0.4.14",
- "mio 0.6.16",
+ "mio 0.6.23",
  "num_cpus",
  "parking_lot",
  "slab 0.4.1",
@@ -1553,7 +1555,7 @@ dependencies = [
  "bytes 0.4.10",
  "futures",
  "iovec",
- "mio 0.6.16",
+ "mio 0.6.23",
  "tokio-io",
  "tokio-reactor",
 ]
@@ -1594,7 +1596,7 @@ dependencies = [
  "bytes 0.4.10",
  "futures",
  "log 0.4.14",
- "mio 0.6.16",
+ "mio 0.6.23",
  "tokio-codec",
  "tokio-io",
  "tokio-reactor",
@@ -1611,7 +1613,7 @@ dependencies = [
  "iovec",
  "libc",
  "log 0.4.14",
- "mio 0.6.16",
+ "mio 0.6.23",
  "mio-uds",
  "tokio-io",
  "tokio-reactor",
@@ -1737,7 +1739,7 @@ version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1436e58182935dcd9ce0add9ea0b558e8a87befe01c1a301e6020aeb0876363"
 dependencies = [
- "cfg-if 0.1.6",
+ "cfg-if 0.1.10",
  "rand 0.4.3",
  "serde 1.0.80",
 ]
