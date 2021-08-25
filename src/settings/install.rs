@@ -6,6 +6,7 @@ use std::io::Read;
 use std::io::Write;
 use std::path::PathBuf;
 use std::str::FromStr;
+use serde::Deserialize;
 use uuid::Uuid;
 
 fn get_install_id_file() -> Result<PathBuf, Error> {

@@ -1,5 +1,6 @@
 use super::{ApiSettings, RecordSettings};
 use config::{Config, ConfigError, Environment, File};
+use serde::Deserialize;
 use failure::Error;
 use failure::Fail;
 use std::env;
