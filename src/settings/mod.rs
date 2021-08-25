@@ -8,9 +8,9 @@ mod cli;
 mod config;
 pub mod install;
 
-use serde::Deserialize;
 use self::cli::CommandLine;
 use self::config::AsciinemaConfig;
+use serde::Deserialize;
 
 pub enum Action {
     Authenticate,
