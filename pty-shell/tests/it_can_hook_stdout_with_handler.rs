@@ -1,7 +1,3 @@
-extern crate pty_shell;
-
-use self::pty_shell::*;
-
 struct TestHandler;
 
 impl PtyHandler for TestHandler {

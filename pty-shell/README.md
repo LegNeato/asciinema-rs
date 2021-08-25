@@ -20,8 +20,6 @@ pty-shell = '0.2.0'
 For example, add src/main.rs as following:
 
 ```rust
-extern crate pty_shell;
-
 use pty_shell::{winsize, PtyShell, PtyHandler};
 
 struct Shell;

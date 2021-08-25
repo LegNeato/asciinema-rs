@@ -1,6 +1,7 @@
 [package]
 name = "asciinema"
 version = "0.5.2-pre"
+edition = "2018"
 authors = ["Christian Legnitto <christian@legnitto.com>"]
 description = "Terminal recording and playback client for asciinema.org"
 homepage = "https://github.com/LegNeato/asciinema-rs"

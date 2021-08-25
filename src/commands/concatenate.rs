@@ -1,8 +1,8 @@
+use crate::settings::ConcatenateSettings;
 use asciicast::{Entry, Header};
 use failure::Error;
 use reqwest::{self, StatusCode};
 use serde_json;
-use settings::ConcatenateSettings;
 use std::fs::File;
 use std::io::copy;
 use std::io::prelude::*;
@@ -34,12 +34,18 @@ pub fn get_file(location: PathBuf, temp: &mut NamedTempFile) -> Result<File, Err
         let mut response = reqwest::get(target)?;
         match response.status() {
             StatusCode::OK => {}
-            StatusCode::NOT_FOUND => Err(ReqwestFailure::NotFound {
-                res: target.to_string(),
-            })?,
-            s => Err(ReqwestFailure::Others {
-                stat: s.to_string(),
-            })?,
+            StatusCode::NOT_FOUND => {
+                return Err(ReqwestFailure::NotFound {
+                    res: target.to_string(),
+                }
+                .into())
+            }
+            s => {
+                return Err(ReqwestFailure::Others {
+                    stat: s.to_string(),
+                }
+                .into())
+            }
         };
         copy(&mut response, temp).unwrap();
         file = temp.reopen()?;
@@ -67,7 +73,7 @@ pub fn go(settings: &ConcatenateSettings) -> Result<(), Error> {
     let res: Result<Header, serde_json::Error> = serde_json::from_str(line.as_str());
     let _header = match res {
         Ok(h) => h,
-        Err(_) => return Err(ConcatenateFailure::HeaderNotFound)?,
+        Err(_) => return Err(ConcatenateFailure::HeaderNotFound.into()),
     };
 
     for line in reader.lines() {

@@ -1,5 +1,3 @@
-extern crate chrono;
-
 use chrono::{DateTime, Utc};
 use std::time::{Duration, Instant};
 

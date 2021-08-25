@@ -1,7 +1,5 @@
-use api::Api;
+use crate::api::Api;
 use failure::Error;
-use os_type;
-use reqwest;
 use reqwest::header::{HeaderMap, LOCATION, USER_AGENT};
 use std::env;
 use std::path::PathBuf;
@@ -61,7 +59,7 @@ impl Upload {
         let location = response
             .headers()
             .get(LOCATION)
-            .unwrap_or(Err(UploadFailure::InvalidResponseLocation {})?)
+            .ok_or(UploadFailure::InvalidResponseLocation {})?
             .to_str()
             .map(|loc| response.url().join(loc))?;
 
@@ -70,7 +68,7 @@ impl Upload {
 
         match location {
             Ok(loc) => Ok(loc),
-            Err(e) => Err(e)?,
+            Err(e) => Err(e.into()),
         }
     }
 }

@@ -2,7 +2,6 @@ use failure::Error;
 use std::path::PathBuf;
 use structopt::StructOpt;
 use url::Url;
-use url_serde;
 use uuid::Uuid;
 
 mod cli;

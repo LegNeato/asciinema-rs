@@ -1,20 +1,13 @@
-extern crate asciicast;
-extern crate chrono;
-extern crate libc;
-extern crate pty_shell;
-extern crate termcolor;
-extern crate url;
-
-extern crate serde_json;
-
+use crate::output_formats::asciicast::AsciicastOutput;
+use crate::output_formats::raw::RawOutput;
+use crate::output_formats::Output;
+use crate::session::Session;
+use crate::settings::RecordSettings;
+use crate::terminal::{Height, Width};
+use crate::uploader::UploadBuilder;
 use failure::ResultExt;
 use failure::{err_msg, Error};
-use output_formats::asciicast::AsciicastOutput;
-use output_formats::raw::RawOutput;
-use output_formats::Output;
 use pty_shell::*;
-use session::Session;
-use settings::RecordSettings;
 use std::collections::HashMap;
 use std::env;
 use std::fs::OpenOptions;
@@ -24,9 +17,7 @@ use std::result::Result;
 use std::str;
 use tempfile::NamedTempFile;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
-use terminal::{Height, Width};
 use termion;
-use uploader::UploadBuilder;
 use url::Url;
 
 #[derive(Debug, Fail)]
@@ -96,7 +87,7 @@ fn validate_output_path(settings: &RecordSettings) -> Result<(), Error> {
         Some(ref x) => {
             let exists = x.as_path().exists();
             // Create a new file if it doesn't exist or we were told to overwrite.
-            if !exists || exists && settings.overwrite {
+            if !exists || settings.overwrite {
                 return Ok(());
             }
             if exists && settings.append {
@@ -104,9 +95,10 @@ fn validate_output_path(settings: &RecordSettings) -> Result<(), Error> {
                 return Ok(());
             }
 
-            Err(RecordFailure::FileExists {
+            return Err(RecordFailure::FileExists {
                 path: x.as_path().to_string_lossy().into_owned(),
-            })?
+            }
+            .into());
         }
         None => Ok(()),
     }
@@ -213,7 +205,7 @@ pub fn go(settings: &RecordSettings, builder: &mut UploadBuilder) -> Result<Reco
 #[cfg(test)]
 mod tests {
     use super::*;
-    use settings::RecordSettings;
+    use crate::settings::RecordSettings;
     use std::path::PathBuf;
 
     enum FileBehavior {

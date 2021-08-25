@@ -1,5 +1,3 @@
-extern crate pty_shell;
-
 use pty_shell::*;
 
 struct Shell;

@@ -1,12 +1,9 @@
+use crate::clock::{get_elapsed_seconds, Clock};
+use crate::output_formats::Msg;
+use crate::terminal::{Height, Width};
 use failure::Error;
-use std::collections::HashMap;
-use terminal::{Height, Width};
-extern crate asciicast;
-extern crate chrono;
-extern crate serde_json;
-use clock::{get_elapsed_seconds, Clock};
-use output_formats::Msg;
 use std::boxed::Box;
+use std::collections::HashMap;
 use std::str;
 use std::sync::mpsc::Sender;
 

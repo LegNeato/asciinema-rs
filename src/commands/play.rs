@@ -1,9 +1,9 @@
+use crate::clock::get_elapsed_seconds;
+use crate::commands::concatenate::get_file;
+use crate::settings::PlaySettings;
 use asciicast::{Entry, Header};
-use clock::get_elapsed_seconds;
-use commands::concatenate::get_file;
 use failure::Error;
 use serde_json;
-use settings::PlaySettings;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader, StdoutLock, Write};
@@ -32,7 +32,7 @@ fn write_with_time_limit(
         let entry: Entry = serde_json::from_str(line.unwrap().as_str())?;
         let delay = entry.time - last;
         last = entry.time;
-        t = t + limit.min(delay);
+        t += limit.min(delay);
 
         loop {
             if t * speed_factor <= get_elapsed_seconds(&base.elapsed()) {
@@ -89,7 +89,7 @@ pub fn go(settings: &PlaySettings) -> Result<(), Error> {
     let res: Result<Header, serde_json::Error> = serde_json::from_str(line.as_str());
     let header = match res {
         Ok(h) => h,
-        Err(_) => return Err(PlayFailure::HeaderNotFound)?,
+        Err(_) => return Err(PlayFailure::HeaderNotFound.into()),
     };
 
     let idle_time_limit = if settings.idle_time_limit.is_some() {

@@ -1,7 +1,7 @@
-use api::Api;
+use crate::api::Api;
+use crate::settings::install::InstallInfo;
+use crate::settings::AuthenticateSettings;
 use failure::Error;
-use settings::install::InstallInfo;
-use settings::AuthenticateSettings;
 use url;
 use url::Url;
 use uuid::Uuid;

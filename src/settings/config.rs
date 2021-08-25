@@ -35,7 +35,7 @@ impl AsciinemaConfig {
 
         match s.try_into() {
             Ok(x) => Ok(x),
-            Err(e) => Err(ConfigFailure::ConfigFileParsingError(e))?,
+            Err(e) => Err(ConfigFailure::ConfigFileParsingError(e).into()),
         }
     }
 }
@@ -65,7 +65,7 @@ pub fn get_config_dir() -> Result<AsciinemaConfigDir, Error> {
     }
 
     // Should only get here if `$HOME` isn't set.
-    Err(ConfigFailure::NoHome {})?
+    Err(ConfigFailure::NoHome {}.into())
 }
 
 fn get_config_file() -> Result<AsciinemaConfigFile, Error> {

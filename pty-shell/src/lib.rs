@@ -7,12 +7,6 @@
     unused_qualifications
 )]
 
-extern crate libc;
-extern crate mio;
-extern crate nix;
-extern crate pty;
-extern crate termios;
-
 pub use pty::prelude as tty;
 
 pub use self::error::*;

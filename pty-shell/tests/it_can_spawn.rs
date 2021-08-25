@@ -1,7 +1,3 @@
-extern crate pty_shell;
-
-use self::pty_shell::*;
-
 #[test]
 fn it_can_spawn() {
     let child = tty::Fork::from_ptmx().unwrap();
