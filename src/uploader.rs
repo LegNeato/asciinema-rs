@@ -1,5 +1,6 @@
 use crate::api::Api;
-use failure::Error;
+use derive_builder::Builder;
+use failure::{Error, Fail};
 use reqwest::header::{HeaderMap, LOCATION, USER_AGENT};
 use std::env;
 use std::path::PathBuf;

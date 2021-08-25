@@ -1,8 +1,4 @@
 #[macro_use]
-extern crate derive_builder;
-#[macro_use]
-extern crate failure;
-#[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate structopt;

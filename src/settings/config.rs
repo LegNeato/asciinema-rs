@@ -1,6 +1,7 @@
 use super::{ApiSettings, RecordSettings};
 use config::{Config, ConfigError, Environment, File};
 use failure::Error;
+use failure::Fail;
 use std::env;
 use std::path::PathBuf;
 

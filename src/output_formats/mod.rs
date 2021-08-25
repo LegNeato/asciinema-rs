@@ -48,7 +48,7 @@ pub trait Output {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use failure::Error;
+    use failure::{Error, Fail};
     use std::sync::mpsc::channel;
 
     #[derive(Debug, Fail)]

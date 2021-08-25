@@ -1,6 +1,6 @@
 use crate::settings::ConcatenateSettings;
 use asciicast::{Entry, Header};
-use failure::Error;
+use failure::{Error, Fail};
 use reqwest::{self, StatusCode};
 use serde_json;
 use std::fs::File;

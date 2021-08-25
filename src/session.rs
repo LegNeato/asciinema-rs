@@ -99,12 +99,12 @@ impl Session {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::terminal::{Height, Width};
     use asciicast::{Entry, EventType, Header};
     use chrono::{DateTime, Utc};
     use std::boxed::Box;
     use std::sync::mpsc::channel;
     use std::time::Duration;
-    use terminal::{Height, Width};
 
     fn make_mock_session(
         tx: Sender<Msg>,

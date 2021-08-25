@@ -2,7 +2,7 @@ use crate::clock::get_elapsed_seconds;
 use crate::commands::concatenate::get_file;
 use crate::settings::PlaySettings;
 use asciicast::{Entry, Header};
-use failure::Error;
+use failure::{Error, Fail};
 use serde_json;
 use std::fs::File;
 use std::io::prelude::*;
