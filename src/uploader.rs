@@ -53,7 +53,7 @@ impl Upload {
             .post(self.api.upload_url())
             .headers(construct_headers())
             .multipart(files)
-            .basic_auth(self.user, Some(self.install_id.hyphenated().to_string()))
+            .basic_auth(self.user, Some(self.install_id.to_hyphenated().to_string()))
             .send()?
             .error_for_status()?;
 

@@ -28,7 +28,7 @@ pty-shell = { path = "pty-shell", version = "0.3.0"}
 url = "1.7.0"
 url_serde = "0.2.0"
 termion = "1.0.0"
-uuid = { version = "0.6", features = ["v4", "serde"] }
+uuid = { version = "0.8.2", features = ["v4", "serde"] }
 os_type = "2.0.0"
 openssl-probe = "0.1.2"
 derive_builder = "0.5.1"

@@ -70,7 +70,7 @@ dependencies = [
  "termion",
  "url",
  "url_serde",
- "uuid 0.6.5",
+ "uuid 0.8.2",
 ]
 
 [[package]]
@@ -411,6 +411,17 @@ checksum = "ab90cde24b3319636588d0c35fe03b1333857621051837ed769faefb4c2162e4"
 dependencies = [
  "futures",
  "num_cpus",
+]
+
+[[package]]
+name = "getrandom"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fcd999463524c52659517fe2cea98493cfe485d10565e7b0fb07dbba7ad2753"
+dependencies = [
+ "cfg-if 1.0.0",
+ "libc",
+ "wasi",
 ]
 
 [[package]]
@@ -904,7 +915,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad7f7e6ebdc79edff6fdcb87a55b620174f7a989e3eb31b65231f4af57f00b8c"
 dependencies = [
  "libc",
- "rand 0.5.5",
+ "rand",
  "rustc_version",
  "smallvec",
  "winapi 0.3.9",
@@ -942,7 +953,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "03dc191feb9b08b0dc1330d6549b795b9d81aec19efe6b4a45aec8d4caee0c4b"
 dependencies = [
  "phf_shared",
- "rand 0.5.5",
+ "rand",
 ]
 
 [[package]]
@@ -1004,17 +1015,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "63b5829244f52738cfee93b3a165c1911388675be000c888d2fae620dee8fa5b"
 dependencies = [
  "proc-macro2",
-]
-
-[[package]]
-name = "rand"
-version = "0.4.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8356f47b32624fef5b3301c1be97e5944ecdd595409cc5da11d05f211db6cfbd"
-dependencies = [
- "fuchsia-zircon",
- "libc",
- "winapi 0.3.9",
 ]
 
 [[package]]
@@ -1390,7 +1390,7 @@ checksum = "55c1195ef8513f3273d55ff59fe5da6940287a0d7a98331254397f464833675b"
 dependencies = [
  "cfg-if 0.1.10",
  "libc",
- "rand 0.5.5",
+ "rand",
  "redox_syscall",
  "remove_dir_all",
  "winapi 0.3.9",
@@ -1453,6 +1453,21 @@ dependencies = [
  "redox_syscall",
  "winapi 0.3.9",
 ]
+
+[[package]]
+name = "tinyvec"
+version = "1.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "848a1e1181b9f6753b5e96a092749e29b11d19ede67dfbbd6c7dc7e0f49b5338"
+dependencies = [
+ "tinyvec_macros",
+]
+
+[[package]]
+name = "tinyvec_macros"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
@@ -1571,7 +1586,7 @@ dependencies = [
  "futures",
  "log 0.4.14",
  "num_cpus",
- "rand 0.5.5",
+ "rand",
  "tokio-executor",
 ]
 
@@ -1669,9 +1684,12 @@ dependencies = [
 
 [[package]]
 name = "unicode-normalization"
-version = "0.1.7"
+version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a0180bc61fc5a987082bfa111f4cc95c4caff7f9799f3e46df09163a937aa25"
+checksum = "d54590932941a9e9266f0832deed84ebe1bf2e4c9e4a3554d393d18f5e854bf9"
+dependencies = [
+ "tinyvec",
+]
 
 [[package]]
 name = "unicode-segmentation"
@@ -1735,22 +1753,21 @@ checksum = "796f7e48bef87609f7ade7e06495a87d5cd06c7866e6a5cbfceffc558a243737"
 
 [[package]]
 name = "uuid"
-version = "0.6.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1436e58182935dcd9ce0add9ea0b558e8a87befe01c1a301e6020aeb0876363"
-dependencies = [
- "cfg-if 0.1.10",
- "rand 0.4.3",
- "serde 1.0.80",
-]
-
-[[package]]
-name = "uuid"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dab5c5526c5caa3d106653401a267fed923e7046f35895ffcb5ca42db64942e6"
 dependencies = [
- "rand 0.5.5",
+ "rand",
+]
+
+[[package]]
+name = "uuid"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
+dependencies = [
+ "getrandom",
+ "serde 1.0.80",
 ]
 
 [[package]]
@@ -1787,6 +1804,12 @@ dependencies = [
  "log 0.4.14",
  "try-lock",
 ]
+
+[[package]]
+name = "wasi"
+version = "0.10.2+wasi-snapshot-preview1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd6fbd9a79829dd1ad0cc20627bf1ed606756a7f77edff7b66b7064f9cb327c6"
 
 [[package]]
 name = "winapi"
