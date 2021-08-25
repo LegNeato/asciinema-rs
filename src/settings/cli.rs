@@ -1,10 +1,14 @@
 use super::{
     AuthenticateSettings, ConcatenateSettings, PlaySettings, RecordSettings, UploadSettings,
 };
+use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "asciinema")]
+#[structopt(
+    global_settings = &[AppSettings::VersionlessSubcommands, AppSettings::InferSubcommands]
+)]
 /// Record and share your terminal sessions, the right way.
 pub enum CommandLine {
     /// Manage recordings on asciinema.org account
