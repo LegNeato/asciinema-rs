@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate structopt;
-
 mod api;
 mod clock;
 mod commands;

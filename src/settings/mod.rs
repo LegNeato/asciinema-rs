@@ -131,7 +131,7 @@ pub struct RecordSettings {
     #[structopt(long = "stdin")]
     pub record_stdin: bool,
     /// Save only raw stdout output
-    #[structopt(long = "raw", raw(requires = r#""FILE""#))]
+    #[structopt(long = "raw", requires = "FILE")]
     pub raw: bool,
     /// Filename/path to save the recording to
     #[structopt(name = "FILE", parse(from_os_str))]
