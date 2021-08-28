@@ -140,8 +140,7 @@ pub struct RecordSettings {
 
 #[derive(StructOpt, Clone, Debug, Deserialize)]
 pub struct ApiSettings {
-    ///  API server URL.
-    #[serde(with = "url_serde")]
+    ///  API server URL
     pub url: Option<Url>,
 }
 

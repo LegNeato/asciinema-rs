@@ -31,7 +31,7 @@ pub fn get_file(location: PathBuf, temp: &mut NamedTempFile) -> Result<File, Err
     if if_url {
         let l = location.with_extension("cast");
         let target = l.to_str().unwrap();
-        let mut response = reqwest::get(target)?;
+        let mut response = reqwest::blocking::get(target)?;
         match response.status() {
             StatusCode::OK => {}
             StatusCode::NOT_FOUND => {
