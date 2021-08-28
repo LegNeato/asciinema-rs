@@ -65,7 +65,7 @@ impl PtyShell for tty::Fork {
     }
 
     fn proxy<H: PtyHandler + 'static>(&self, handler: H) -> Result<()> {
-        if let Some(master) = self.is_parent().ok() {
+        if let Ok(master) = self.is_parent() {
             setup_terminal(master)?;
             do_proxy(master, handler)?;
         }
@@ -76,7 +76,7 @@ impl PtyShell for tty::Fork {
 fn do_proxy<H: PtyHandler + 'static>(pty: tty::Master, handler: H) -> Result<()> {
     let mut event_loop = mio::EventLoop::new()?;
 
-    let mut writer = pty.clone();
+    let mut writer = pty;
     let (input_reader, mut input_writer) = mio::unix::pipe()?;
 
     thread::spawn(move || {
@@ -85,7 +85,7 @@ fn do_proxy<H: PtyHandler + 'static>(pty: tty::Master, handler: H) -> Result<()>
         });
     });
 
-    let mut reader = pty.clone();
+    let mut reader = pty;
     let (output_reader, mut output_writer) = mio::unix::pipe()?;
     let message_sender = event_loop.channel();
 
@@ -101,18 +101,17 @@ fn do_proxy<H: PtyHandler + 'static>(pty: tty::Master, handler: H) -> Result<()>
         &input_reader,
         INPUT,
         mio::EventSet::readable(),
-        mio::PollOpt::level()
+        mio::PollOpt::level(),
     )?;
     event_loop.register(
         &output_reader,
         OUTPUT,
         mio::EventSet::readable(),
-        mio::PollOpt::level()
+        mio::PollOpt::level(),
     )?;
     RawHandler::register_sigwinch_handler();
 
-    let mut raw_handler =
-        RawHandler::new(input_reader, output_reader, pty.clone(), Box::new(handler));
+    let mut raw_handler = RawHandler::new(input_reader, output_reader, pty, Box::new(handler));
 
     thread::spawn(move || {
         event_loop.run(&mut raw_handler).unwrap_or_else(|e| {
@@ -133,8 +132,8 @@ fn handle_input(
     loop {
         let nread = input.read(&mut buf)?;
 
-        writer.write(&buf[..nread])?;
-        handler_writer.write(&buf[..nread])?;
+        writer.write_all(&buf[..nread])?;
+        handler_writer.write_all(&buf[..nread])?;
     }
 }
 
@@ -148,13 +147,13 @@ fn handle_output(
     loop {
         let nread = reader.read(&mut buf)?;
 
-        if nread <= 0 {
+        if nread == 0 {
             break;
         } else {
-            output.write(&buf[..nread])?;
+            output.write_all(&buf[..nread])?;
             let _ = output.flush();
 
-            handler_writer.write(&buf[..nread])?;
+            handler_writer.write_all(&buf[..nread])?;
         }
     }
 
@@ -196,17 +195,6 @@ impl PtyHandler for PtyCallbackData {
 pub struct PtyCallbackBuilder(PtyCallbackData);
 
 impl PtyCallbackBuilder {
-    pub fn new() -> Self {
-        let data = PtyCallbackData {
-            input_handler: Box::new(|_| {}),
-            output_handler: Box::new(|_| {}),
-            resize_handler: Box::new(|_| {}),
-            shutdown_handler: Box::new(|| {}),
-        };
-
-        PtyCallbackBuilder(data)
-    }
-
     pub fn input<F>(mut self, handler: F) -> Self
     where
         F: FnMut(&[u8]) + 'static,
@@ -245,6 +233,19 @@ impl PtyCallbackBuilder {
 
     pub fn build(self) -> PtyCallbackData {
         self.0
+    }
+}
+
+impl Default for PtyCallbackBuilder {
+    fn default() -> Self {
+        let data = PtyCallbackData {
+            input_handler: Box::new(|_| {}),
+            output_handler: Box::new(|_| {}),
+            resize_handler: Box::new(|_| {}),
+            shutdown_handler: Box::new(|| {}),
+        };
+
+        PtyCallbackBuilder(data)
     }
 }
 

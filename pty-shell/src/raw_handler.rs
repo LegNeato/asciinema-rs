@@ -1,5 +1,4 @@
 use super::PtyHandler;
-use libc;
 use mio::*;
 use nix::sys::signal;
 use std::io::Read;
@@ -39,10 +38,10 @@ impl RawHandler {
         handler: Box<dyn PtyHandler>,
     ) -> Self {
         RawHandler {
-            input: input,
-            output: output,
-            pty: pty,
-            handler: handler,
+            input,
+            output,
+            pty,
+            handler,
             resize_count: Self::sigwich_count(),
         }
     }
@@ -89,7 +88,7 @@ impl Handler for RawHandler {
                     let mut buf = [0; 1024 * 10];
                     let nread = self.output.read(&mut buf).unwrap_or(0);
 
-                    if nread <= 0 {
+                    if nread == 0 {
                         event_loop.shutdown();
                     } else {
                         (&mut *self.handler).output(&buf[..nread]);

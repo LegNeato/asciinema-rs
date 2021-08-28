@@ -8,11 +8,8 @@ use crate::winsize;
 
 static mut TERMIOS_TO_RESTORE: Option<Termios> = None;
 pub extern "C" fn restore_termios() {
-    match unsafe { TERMIOS_TO_RESTORE } {
-        Some(termios) => {
-            let _ = tcsetattr(libc::STDIN_FILENO, TCSANOW, &termios);
-        }
-        None => (),
+    if let Some(termios) = unsafe { TERMIOS_TO_RESTORE } {
+        let _ = tcsetattr(libc::STDIN_FILENO, TCSANOW, &termios);
     }
 }
 

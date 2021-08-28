@@ -1,3 +1,5 @@
+use pty_shell::{restore_termios, tty, PtyHandler, PtyShell};
+
 struct TestHandler;
 
 impl PtyHandler for TestHandler {

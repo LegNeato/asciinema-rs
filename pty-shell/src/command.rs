@@ -1,4 +1,3 @@
-use libc;
 use std::collections::HashMap;
 use std::{ffi, ptr};
 
@@ -12,12 +11,10 @@ pub fn exec_with_env<S: AsRef<str>>(shell: S, env: Option<HashMap<String, String
     let cmd = ffi::CString::new(shell.as_ref()).unwrap();
 
     // The arguments to the command.
-    let mut args: Vec<*const libc::c_char> = Vec::with_capacity(1);
-    args.push(cmd.as_ptr());
-    args.push(ptr::null());
+    let args: Vec<*const libc::c_char> = vec![cmd.as_ptr(), ptr::null()];
 
     // The environment we are running in.
-    let v = env.unwrap_or(HashMap::new());
+    let v = env.unwrap_or_default();
     // We need to save the `CString`s in this scope, otherwise the pointers will be drefed
     // and all hell breaks loose.
     let cstring_vars: Vec<ffi::CString> = v

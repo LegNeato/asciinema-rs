@@ -1,3 +1,5 @@
+use pty_shell::{restore_termios, tty, PtyCallback, PtyShell};
+
 #[test]
 fn it_can_hook_stdout_with_callback() {
     let child = tty::Fork::from_ptmx().unwrap();
@@ -5,7 +7,7 @@ fn it_can_hook_stdout_with_callback() {
 
     child
         .proxy(
-            PtyCallback::new()
+            PtyCallback::default()
                 .output(|data| assert!(data.len() != 0))
                 .build(),
         )

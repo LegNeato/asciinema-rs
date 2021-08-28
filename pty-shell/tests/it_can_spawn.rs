@@ -1,3 +1,5 @@
+use pty_shell::{restore_termios, tty, PtyShell};
+
 #[test]
 fn it_can_spawn() {
     let child = tty::Fork::from_ptmx().unwrap();
