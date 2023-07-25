@@ -1,6 +1,4 @@
-extern crate pty_shell;
-
-use self::pty_shell::*;
+use pty_shell::{restore_termios, tty, PtyHandler, PtyShell};
 
 struct TestHandler;
 

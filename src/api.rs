@@ -16,11 +16,9 @@ impl Api {
         // below behave correctly.
         let mut base_raw = base_url.to_string();
         if let Some(last_char) = base_raw.pop() {
+            base_raw.push(last_char);
             if last_char != '/' {
-                base_raw.push(last_char);
                 base_raw.push('/');
-            } else {
-                base_raw.push(last_char);
             }
         }
         let normalized_base = Url::parse(&base_raw)?;

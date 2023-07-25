@@ -1,7 +1,7 @@
-use api::Api;
-use failure::Error;
-use os_type;
-use reqwest;
+use crate::api::Api;
+use derive_builder::Builder;
+use failure::{Error, Fail};
+use reqwest::blocking::multipart::Part;
 use reqwest::header::{HeaderMap, LOCATION, USER_AGENT};
 use std::env;
 use std::path::PathBuf;
@@ -48,20 +48,21 @@ impl UploadBuilder {
 
 impl Upload {
     pub fn upload_file(self, file: PathBuf) -> Result<Url, Error> {
-        let files = reqwest::multipart::Form::new().file("asciicast", file)?;
+        let part = Part::file(file)?;
+        let files = reqwest::blocking::multipart::Form::new().part("asciicast", part);
 
-        let response = reqwest::Client::new()
+        let response = reqwest::blocking::Client::new()
             .post(self.api.upload_url())
             .headers(construct_headers())
             .multipart(files)
-            .basic_auth(self.user, Some(self.install_id.hyphenated().to_string()))
+            .basic_auth(self.user, Some(self.install_id.to_hyphenated().to_string()))
             .send()?
             .error_for_status()?;
 
         let location = response
             .headers()
             .get(LOCATION)
-            .unwrap_or(Err(UploadFailure::InvalidResponseLocation {})?)
+            .ok_or(UploadFailure::InvalidResponseLocation {})?
             .to_str()
             .map(|loc| response.url().join(loc))?;
 
@@ -70,7 +71,7 @@ impl Upload {
 
         match location {
             Ok(loc) => Ok(loc),
-            Err(e) => Err(e)?,
+            Err(e) => Err(e.into()),
         }
     }
 }

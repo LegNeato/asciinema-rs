@@ -1,6 +1,4 @@
-extern crate pty_shell;
-
-use self::pty_shell::*;
+use pty_shell::{restore_termios, tty, PtyCallback, PtyShell};
 
 #[test]
 fn it_can_hook_stdout_with_callback() {
@@ -9,7 +7,7 @@ fn it_can_hook_stdout_with_callback() {
 
     child
         .proxy(
-            PtyCallback::new()
+            PtyCallback::default()
                 .output(|data| assert!(data.len() != 0))
                 .build(),
         )

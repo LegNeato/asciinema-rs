@@ -1,5 +1,6 @@
 use super::config;
 use failure::Error;
+use serde::Deserialize;
 use std::fs::create_dir_all;
 use std::fs::File;
 use std::io::Read;
@@ -48,7 +49,7 @@ impl InstallInfo {
         create_dir_all(self.location.parent().unwrap())?;
         // Write the file.
         let mut f = File::create(&self.location)?;
-        f.write_all(self.id.hyphenated().to_string().as_bytes())?;
+        f.write_all(self.id.to_hyphenated().to_string().as_bytes())?;
         Ok(())
     }
 }

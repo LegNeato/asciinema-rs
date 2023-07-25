@@ -1,6 +1,3 @@
-extern crate asciicast;
-extern crate serde_json;
-
 use super::{LoopAction, Msg, Output};
 use failure::Error;
 use std::fs::File;

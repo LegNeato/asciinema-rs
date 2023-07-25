@@ -1,6 +1,4 @@
-extern crate asciicast as asciicast_format;
-extern crate serde_json;
-
+use ::asciicast as asciicast_format;
 use failure::Error;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
@@ -50,7 +48,7 @@ pub trait Output {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use failure::Error;
+    use failure::{Error, Fail};
     use std::sync::mpsc::channel;
 
     #[derive(Debug, Fail)]

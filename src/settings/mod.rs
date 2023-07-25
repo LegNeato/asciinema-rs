@@ -2,7 +2,6 @@ use failure::Error;
 use std::path::PathBuf;
 use structopt::StructOpt;
 use url::Url;
-use url_serde;
 use uuid::Uuid;
 
 mod cli;
@@ -11,6 +10,7 @@ pub mod install;
 
 use self::cli::CommandLine;
 use self::config::AsciinemaConfig;
+use serde::Deserialize;
 
 pub enum Action {
     Authenticate,
@@ -131,7 +131,7 @@ pub struct RecordSettings {
     #[structopt(long = "stdin")]
     pub record_stdin: bool,
     /// Save only raw stdout output
-    #[structopt(long = "raw", raw(requires = r#""FILE""#))]
+    #[structopt(long = "raw", requires = "FILE")]
     pub raw: bool,
     /// Filename/path to save the recording to
     #[structopt(name = "FILE", parse(from_os_str))]
@@ -140,8 +140,7 @@ pub struct RecordSettings {
 
 #[derive(StructOpt, Clone, Debug, Deserialize)]
 pub struct ApiSettings {
-    ///  API server URL.
-    #[serde(with = "url_serde")]
+    ///  API server URL
     pub url: Option<Url>,
 }
 

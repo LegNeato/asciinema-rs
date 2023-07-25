@@ -1,6 +1,8 @@
 use super::{ApiSettings, RecordSettings};
 use config::{Config, ConfigError, Environment, File};
 use failure::Error;
+use failure::Fail;
+use serde::Deserialize;
 use std::env;
 use std::path::PathBuf;
 
@@ -35,7 +37,7 @@ impl AsciinemaConfig {
 
         match s.try_into() {
             Ok(x) => Ok(x),
-            Err(e) => Err(ConfigFailure::ConfigFileParsingError(e))?,
+            Err(e) => Err(ConfigFailure::ConfigFileParsingError(e).into()),
         }
     }
 }
@@ -65,7 +67,7 @@ pub fn get_config_dir() -> Result<AsciinemaConfigDir, Error> {
     }
 
     // Should only get here if `$HOME` isn't set.
-    Err(ConfigFailure::NoHome {})?
+    Err(ConfigFailure::NoHome {}.into())
 }
 
 fn get_config_file() -> Result<AsciinemaConfigFile, Error> {

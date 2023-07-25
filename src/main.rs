@@ -1,28 +1,3 @@
-extern crate asciicast;
-extern crate chrono;
-extern crate config;
-#[macro_use]
-extern crate derive_builder;
-#[macro_use]
-extern crate failure;
-extern crate libc;
-extern crate openssl_probe;
-extern crate os_type;
-extern crate pty_shell;
-extern crate reqwest;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-#[macro_use]
-extern crate structopt;
-extern crate tempfile;
-extern crate termcolor;
-extern crate termion;
-extern crate url;
-extern crate url_serde;
-extern crate uuid;
-
 mod api;
 mod clock;
 mod commands;
